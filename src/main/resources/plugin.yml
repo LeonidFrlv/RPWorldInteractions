@@ -1,0 +1,10 @@
+name: RPWorldInteractions
+version: 0.2
+api-version: 1.18
+main: org.sequeence.plugin.RPWorldInteractions
+commands:
+  actionpanel:
+    usage: /ap
+    permission: op
+    aliases:
+      - ap
