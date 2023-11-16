@@ -1,9 +1,9 @@
 package org.s1queence.plugin.actionpanel;
 
+import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -56,7 +56,7 @@ public class RPActionPanel {
 
         for (String key : actions.keySet()) {
             if (key.contains(".")) continue;
-            Map<String, Object> item = ((MemorySection)actions.get(key)).getValues(true);
+            Map<String, Object> item = ((Section)actions.get(key)).getStringRouteMappedValues(true);
 
             ItemStack is = new ItemStack(Material.ENCHANTED_BOOK);
             ItemMeta im = is.getItemMeta();
