@@ -6,17 +6,20 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.RPWorldInteractions;
+import org.s1queence.plugin.utils.TextUtils;
 
 public class ActionPanelCommand implements CommandExecutor {
     private final RPWorldInteractions plugin;
     public ActionPanelCommand(RPWorldInteractions plugin) {this.plugin = plugin;}
-
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (args.length != 0) return false;
-        if (!(commandSender instanceof Player)) return true;
-        Player sender = (Player) commandSender;
-        sender.openInventory(plugin.getRPActionPanel().getInventory());
+        if (!(sender instanceof Player)) return true;
+        if (!plugin.isPanelCommandEnable()) {
+            sender.sendMessage(TextUtils.getMsg("is_action_panel_command_disabled", plugin));
+            return true;
+        }
+        ((Player)sender).openInventory(plugin.getRPActionPanel().getInventory());
         return true;
     }
 }

@@ -9,17 +9,14 @@ import org.bukkit.inventory.ItemStack;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 
-public class PlayerRespawnListener implements Listener {
-
+public class PlayerSpawnListener implements Listener {
     private final RPWorldInteractions plugin;
-    public PlayerRespawnListener(RPWorldInteractions plugin) {this.plugin = plugin;}
+    public PlayerSpawnListener(RPWorldInteractions plugin) {this.plugin = plugin;}
 
     @EventHandler
     private void onPlayerSpawn(PlayerRespawnEvent e) {
         Player player = e.getPlayer();
-        ItemStack cloned = plugin.getRPActionPanel().getActionsList().get(0).clone();
-        ActionPanelUtil.insertLoreBeforeEnd(cloned, plugin.getInfoLore());
-        player.getInventory().setItem(8, cloned);
+        ActionPanelUtil.addDefaultActionItem(player, plugin);
         if (player.getWalkSpeed() == RPWorldInteractions.PLAYER_RP_ACTION_SPEED) player.setWalkSpeed(0.2f);
     }
 
@@ -29,8 +26,6 @@ public class PlayerRespawnListener implements Listener {
         ItemStack eightItem = player.getInventory().getItem(8);
         if (player.getWalkSpeed() == RPWorldInteractions.PLAYER_RP_ACTION_SPEED) player.setWalkSpeed(0.2f);
         if (eightItem != null && ActionPanelUtil.isActionItem(eightItem, plugin)) return;
-        ItemStack cloned = plugin.getRPActionPanel().getActionsList().get(0).clone();
-        ActionPanelUtil.insertLoreBeforeEnd(cloned, plugin.getInfoLore());
-        player.getInventory().setItem(8, cloned);
+        ActionPanelUtil.addDefaultActionItem(player, plugin);
     }
 }

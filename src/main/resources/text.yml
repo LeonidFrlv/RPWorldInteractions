@@ -1,0 +1,78 @@
+#special
+# %progress_bar% - чтобы вставить progress bar в строку (работает только для действий, которые требует времени для своего выполнения).
+# %percent% - сколько выполнено (в процентах) (работает только для действий)
+# %plugin% - чтобы вставить название плагина
+# %msg_path% - чтобы вставить путь к текущей строке (только с msg_is_null)
+
+#plugin
+onEnable_msg: "%plugin% &aБыл включен!"
+onDisable_msg: "%plugin% &cБыл выключен!"
+onReload_msg: "%plugin% &aКонфиг был обновлён!"
+
+#errors
+msg_is_null: "%plugin% &4Сообщение = null. Пропишите в этом файле: %msg_path%: <сообщение>, чтобы всё отображалось корректно."
+is_action_panel_command_disabled: "%plugin% &4Команда выключена!"
+alert_item_null: "%plugin% &4При создании инвентаря произошла ошибка: предмет-действие не был создан. Проверьте action_inventory.yml конфиг. Скорее всего ошибка в нём!"
+unknown_rpwi_command_action_alert: "%plugin% &4Неизвестное действие"
+
+#actions_messages
+# target - игрок на котором используют предмет; player - игрок, который использует предмет.
+# в тайтлах и сабтахтлах если что-то из этого собираешься оставлять пустым - оставляй чисто пробел (" ")
+rummage_action: # может подобное в отдельный конфиг?
+  preprocess:
+    every_tick: #рекомендую использовать только вместе с progress_bar
+      action_bar_both: "%percent% %progress_bar%"
+    every_second:
+      player:
+        title: " "
+        subtitle: "Вы проводите &6обыск"
+      target:
+        title: " "
+        subtitle: "Вас &cобыскивают"
+    cancel:
+      action_bar_both: " "
+      player:
+        title: " "
+        subtitle: "&fОбыск прерван"
+      target:
+        title: " "
+        subtitle: "&fОбыск прерван"
+    complete:
+      action_bar_both: " "
+      player:
+        title: " "
+        subtitle: " "
+      target:
+        title: " "
+        subtitle: " "
+  process:
+    every_tick:
+      action_bar_both: "%progress_bar%"
+    every_second:
+      target:
+        title: "Ваш инвентарь осматривают"
+        subtitle: "Присядьте, чтобы &cпомешать"
+    cancel: #complete тоже самое что и cancel у rummage
+      action_bar_both: " "
+      player:
+        title: " "
+        subtitle: "Осмотр предметов &cпрерван &fили &aзавершён"
+      target:
+        title: " "
+        subtitle: "Осмотр предметов &cпрерван &fили &aзавершён"
+progress_bar: #работает только с every_tick
+  symbol: ∎
+  max_bars: 21
+  border_left: "&8{"
+  border_right: "&8}"
+  color: f
+  complete_color: 6
+  percent_color: 6
+
+#items
+#напиши default если хочешь, чтобы свойство осталось стандартным, то есть перешедшим от material
+empty_item:
+  material: RED_STAINED_GLASS_PANE
+  name: "&cОграничитель"
+  cmd: default
+  lore: default

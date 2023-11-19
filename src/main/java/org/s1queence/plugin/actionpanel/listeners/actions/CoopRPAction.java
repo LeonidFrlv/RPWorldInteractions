@@ -1,7 +1,5 @@
 package org.s1queence.plugin.actionpanel.listeners.actions;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -9,9 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.actionpanel.utils.ProgressBar;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.utils.MyUtils;
+import org.s1queence.plugin.utils.TextUtils;
 
 public class CoopRPAction {
     private final Player player;
+
     private final Player target;
     private final RPWorldInteractions plugin;
     private final ItemStack launchItem;
@@ -26,21 +26,16 @@ public class CoopRPAction {
         this.initialTargetSpeed = target.getWalkSpeed();
     }
 
-    protected void cancelAction(String msg) {
+    protected void cancelAction(String path) {
         plugin.getPlayersInAction().remove(player);
-        MyUtils.sendActionBarMsg(player, msg);
-        MyUtils.sendActionBarMsg(target, msg);
-        player.sendTitle(" ", " ", 0, 0, 0);
-        target.sendTitle(" ", " ", 0, 0, 0);
+        MyUtils.sendActionBarMsg(player, TextUtils.getMsg(path + ".action_bar_both", plugin));
+        MyUtils.sendActionBarMsg(target, TextUtils.getMsg(path + ".action_bar_both", plugin));
+        player.sendTitle(TextUtils.getMsg(path + ".player.title", plugin), TextUtils.getMsg(path + ".player.subtitle", plugin), 0, 75, 20);
+        target.sendTitle(TextUtils.getMsg(path + ".target.title", plugin), TextUtils.getMsg(path + ".target.subtitle", plugin), 0, 75, 20);
         player.setWalkSpeed(initialPlayerSpeed);
         target.setWalkSpeed(initialTargetSpeed);
         player.closeInventory();
         target.closeInventory();
-    }
-
-    protected void playActionSound() {
-        player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 0.35f, 0.222f);
-        target.playSound(target, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 0.35f, 0.222f);
     }
 
     protected void setWalkSpeedForAll() {
@@ -48,8 +43,8 @@ public class CoopRPAction {
         target.setWalkSpeed(RPWorldInteractions.PLAYER_RP_ACTION_SPEED);
     }
 
-    protected String getCountDownActionBar(int initial, int current) {
-        return ChatColor.GRAY + "{" + ProgressBar.getProgressBar(initial - current, initial, 21, '∎', ChatColor.GOLD, ChatColor.WHITE) + ChatColor.GRAY + "}";
+    protected String getCountDownProgressBar(int initial, int current) {
+        return ProgressBar.getProgressBar(initial - current, initial, plugin);
     }
 
     protected boolean isActionCanceled() {
@@ -63,45 +58,45 @@ public class CoopRPAction {
         return isSneaking || !isLaunchItemInitial || !isTargetNearby || !isInAction || !isOnline || isDead;
     }
 
-    protected void actionCountDown(@NotNull Integer seconds, @NotNull String processPlayerMsg, @NotNull String processTargetMsg, @NotNull String completePlayerMsg, @NotNull String completeTargetMsg) {
+    protected void actionCountDown(@NotNull Integer seconds, @NotNull String textPath) {
         setWalkSpeedForAll();
         if (plugin.isPlayerInAction(player) || plugin.isPlayerInAction(target)) return;
         if (!plugin.isActionCoolDownExpired(player) || !plugin.isActionCoolDownExpired(target)) return;
         plugin.getPlayersInAction().put(player, target);
         plugin.getItemActionCoolDown().put(player, target);
 
+        final float ACTION_TIME = seconds * 20;
         new BukkitRunnable() {
-            int time = seconds * 20;
+            int currentTicks = (int)ACTION_TIME;
             @Override
             public void run() {
                 if (isActionCanceled()) {
-                    cancelAction("Действие прервано игроком!");
+                    cancelAction(textPath + ".preprocess.cancel");
                     plugin.getItemActionCoolDown().remove(player);
                     cancel();
                     return;
                 }
 
-                if (time % 20 == 0) {
-                    player.sendTitle(" ", processPlayerMsg, 0, 100, 0);
-                    target.sendTitle(" ", processTargetMsg, 0, 100, 0);
-                    MyUtils.sendActionBarMsg(player, getCountDownActionBar(seconds, time / 20));
-                    MyUtils.sendActionBarMsg(target, getCountDownActionBar(seconds, time / 20));
-                    playActionSound();
+                if (currentTicks % 20 == 0) {
+                    player.sendTitle(TextUtils.getMsg(textPath + ".preprocess.every_second.player.title", plugin), TextUtils.getMsg(textPath + ".preprocess.every_second.player.subtitle", plugin), 0, 100, 0);
+                    target.sendTitle(TextUtils.getMsg(textPath + ".preprocess.every_second.target.title", plugin), TextUtils.getMsg(textPath + ".preprocess.every_second.target.subtitle", plugin), 0, 100, 0);
                 }
 
-                if (time == 0) {
-                    MyUtils.sendActionBarMsg(player, "");
-                    MyUtils.sendActionBarMsg(target, "");
+                if (currentTicks == 0) {
                     plugin.getItemActionCoolDown().remove(player);
-                    player.sendTitle(" ", completePlayerMsg, 0, 50, 15);
-                    target.sendTitle(" ", completeTargetMsg, 0, 50, 15);
+                    MyUtils.sendActionBarMsg(player, TextUtils.getMsg(textPath + ".preprocess.complete.action_bar_both", plugin));
+                    MyUtils.sendActionBarMsg(target, TextUtils.getMsg(textPath + ".preprocess.complete.action_bar_both", plugin));
+                    player.sendTitle(TextUtils.getMsg(textPath + ".preprocess.complete.player.title", plugin), TextUtils.getMsg(textPath + ".preprocess.complete.player.subtitle", plugin), 0, 75, 15);
+                    target.sendTitle(TextUtils.getMsg(textPath + ".preprocess.complete.target.title", plugin), TextUtils.getMsg(textPath + ".preprocess.complete.target.subtitle", plugin), 0, 75, 15);
                     cancel();
                     return;
                 }
 
+                currentTicks--;
                 player.closeInventory();
                 target.closeInventory();
-                time--;
+                MyUtils.sendActionBarMsg(player, TextUtils.getProgressBarMsg(textPath + ".preprocess.every_tick.action_bar_both", getCountDownProgressBar((int)ACTION_TIME, currentTicks),  "" + (int)(((ACTION_TIME - currentTicks) / ACTION_TIME) * 100), plugin));
+                MyUtils.sendActionBarMsg(target, TextUtils.getProgressBarMsg(textPath + ".preprocess.every_tick.action_bar_both", getCountDownProgressBar((int)ACTION_TIME, currentTicks),  "" + (int)(((ACTION_TIME - currentTicks) / ACTION_TIME) * 100), plugin));
             }
         }.runTaskTimer(plugin, 0, 1);
     }

@@ -1,18 +1,19 @@
 # Список уникальных id:
-# lookat
-# lay
-# sit
-# crawl
-# put
-# rummage
-# push
-# dropblock
-# ???
-# close
+#  &8#lookat
+#  &8#lay
+#  &8#sit
+#  &8#crawl
+#  &8#put
+#  &8#rummage
+#  &8#push
+#  &8#dropblock
+#  &8#close
 
-#Используй "какой-то текст", если хочешь внедрить цветовые коды в строку
+#Используй двойные ковычки (""), если хочешь внедрить цветовые коды в строку
+#напиши default если хочешь, чтобы свойство осталось стандартным, то есть перешедшим от material
+#uniqueId должен быть один из списка uniqueId сверху и обязательно указан
 action_inv:
-  enabled: true
+  command_enable: false
   title: "Уникальные действия"
   item_usage:
     - " "
@@ -21,6 +22,8 @@ action_inv:
     - "&7этот предмет."
   actions:
     1:
+      material: ENCHANTED_BOOK
+      cmd: default
       name: "&r&eОсмотреть"
       lore:
         - "&9Действие"
@@ -33,9 +36,10 @@ action_inv:
         - "&7о нём дополнительную информацию."
         - " "
         - "&6&lБудем посмотреть..."
-#       - mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm - если строка длиннее этой, то лучше перенести на следующую, так как будет криво отображаться
       uniqueId: "&8#lookat"
     2:
+      material: ENCHANTED_BOOK
+      cmd: default
       name: "&r&eЛечь"
       lore:
         - "&9Быстрое действие"
@@ -45,6 +49,8 @@ action_inv:
         - "&6&lМожно сойти за труп"
       uniqueId: "&8#lay"
     3:
+      material: ENCHANTED_BOOK
+      cmd: default
       name: "&r&eСесть"
       lore:
         - "&9Быстрое действие"
@@ -54,6 +60,8 @@ action_inv:
         - "&6&l..раздвинув ноги"
       uniqueId: "&8#sit"
     4:
+      material: ENCHANTED_BOOK
+      cmd: default
       name: "&r&eПолзти"
       lore:
         - "&9Быстрое действие"
@@ -63,6 +71,8 @@ action_inv:
         - "&6&lБудет не видно в кустах"
       uniqueId: "&8#crawl"
     5:
+      material: ENCHANTED_BOOK
+      cmd: default
       name: "&r&eПоложить"
       lore:
         - "&9Действие"
@@ -75,6 +85,8 @@ action_inv:
         - "&6&lКак будто в невидимой рамке..."
       uniqueId: "&8#put"
     6:
+      material: ENCHANTED_BOOK
+      cmd: default
       name: "&r&eОбыскать"
       lore:
         - "&9Действие"
@@ -85,6 +97,8 @@ action_inv:
         - "&6&lСмотреть можно, а трогать нужно"
       uniqueId: "&8#rummage"
     7:
+      material: ENCHANTED_BOOK
+      cmd: default
       name: "&r&eТолкнуть"
       lore:
         - "&9Действие"
@@ -96,6 +110,8 @@ action_inv:
         - "&6&lКак ты меня назвал?"
       uniqueId: "&8#push"
     8:
+      material: ENCHANTED_BOOK
+      cmd: default
       name: "&r&eУронить"
       lore:
         - "&9Действие"
@@ -104,9 +120,11 @@ action_inv:
         - "&7руки так, чтобы он падал вниз,"
         - "&7как песок."
         - " "
-        - "&6&l\" - Эй там, внизу! Ложиииись!\""
+        - "&6&l\"- Эй там, внизу! Ложиииись!\""
       uniqueId: "&8#dropblock"
     10:
+      material: ENCHANTED_BOOK
+      cmd: default
       name: "&r&eЗакрыть"
       lore:
         - "&9Быстрое действие"

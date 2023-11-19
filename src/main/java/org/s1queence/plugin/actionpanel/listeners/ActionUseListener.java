@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.s1queence.plugin.RPWorldInteractions;
-import org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage;
+import org.s1queence.plugin.actionpanel.listeners.actions.Rummage;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 
 public class ActionUseListener implements Listener {
@@ -26,7 +26,7 @@ public class ActionUseListener implements Listener {
     public ActionUseListener(RPWorldInteractions plugin) {this.plugin = plugin;}
 
     private void moveActionToInventory(Player player, ItemStack is) {
-        ActionPanelUtil.insertLoreBeforeEnd(is, plugin.getInfoLore());
+        ActionPanelUtil.insertLoreBeforeEnd(is, plugin.getItemUsage());
         player.getInventory().setItem(8, is);
     }
 
