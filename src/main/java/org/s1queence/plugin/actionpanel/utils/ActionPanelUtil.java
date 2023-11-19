@@ -2,6 +2,7 @@ package org.s1queence.plugin.actionpanel.utils;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.s1queence.plugin.RPWorldInteractions;
@@ -24,7 +25,7 @@ public abstract class ActionPanelUtil {
         if (getActionUUID(item) == null) return false;
         for (ItemStack action : plugin.getRPActionPanel().getActionsList()) {
             ItemStack cloned = action.clone();
-            insertLoreBeforeEnd(cloned, plugin.getInfoLore());
+            insertLoreBeforeEnd(cloned, plugin.getItemUsage());
             if (cloned.equals(item)) return true;
         }
 
@@ -42,5 +43,11 @@ public abstract class ActionPanelUtil {
         lore.add(removed);
         im.setLore(lore);
         is.setItemMeta(im);
+    }
+
+    public static void addDefaultActionItem(Player player, RPWorldInteractions plugin) {
+        ItemStack cloned = plugin.getRPActionPanel().getActionsList().get(0).clone();
+        ActionPanelUtil.insertLoreBeforeEnd(cloned, plugin.getItemUsage());
+        player.getInventory().setItem(8, cloned);
     }
 }

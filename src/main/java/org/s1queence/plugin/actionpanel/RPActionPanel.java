@@ -3,12 +3,12 @@ package org.s1queence.plugin.actionpanel;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
+import org.s1queence.plugin.utils.TextUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,13 +17,16 @@ import java.util.Map;
 
 import static org.s1queence.plugin.utils.MyUtils.empty;
 
+
 public class RPActionPanel {
     private final String title;
     private final Inventory inv;
+    private final RPWorldInteractions plugin;
     private final List<ItemStack> actionsLi = new ArrayList<>();
 
-    public RPActionPanel(@NotNull String title, @NotNull Map<String, Object> actions) {
+    public RPActionPanel(@NotNull String title, @NotNull Map<String, Object> actions, @NotNull RPWorldInteractions plugin) {
         this.title = title;
+        this.plugin = plugin;
         inv = create(actions);
     }
 
@@ -56,27 +59,11 @@ public class RPActionPanel {
 
         for (String key : actions.keySet()) {
             if (key.contains(".")) continue;
-            Map<String, Object> item = ((Section)actions.get(key)).getStringRouteMappedValues(true);
+            Map<String, Object> itemData = ((Section)actions.get(key)).getStringRouteMappedValues(true);
 
-            ItemStack is = new ItemStack(Material.ENCHANTED_BOOK);
-            ItemMeta im = is.getItemMeta();
+            ItemStack is = TextUtils.createItemFromConfig(itemData, true);
 
-            String name = (String)item.get("name");
-            im.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
-
-            List<String> loreList = (List<String>)item.get("lore");
-            List<String> lore = new ArrayList<>();
-            if (loreList != null || !loreList.isEmpty()) {
-                for (String row : loreList) {
-                    lore.add(ChatColor.translateAlternateColorCodes('&', row));
-                }
-            }
-
-            String uuid = (String) item.get("uniqueId");
-            lore.add(ChatColor.translateAlternateColorCodes('&', uuid));
-
-            im.setLore(lore);
-            is.setItemMeta(im);
+            if (is == null) plugin.log(TextUtils.getMsg("alert_item_null", plugin));
 
             actionsLi.add(is);
         }
@@ -95,7 +82,7 @@ public class RPActionPanel {
 
         for (int i = 0; i < 27; i++) {
             if (actionInv.getItem(i) != null) continue;
-            actionInv.setItem(i, empty());
+            actionInv.setItem(i, empty(plugin));
         }
 
         return actionInv;
