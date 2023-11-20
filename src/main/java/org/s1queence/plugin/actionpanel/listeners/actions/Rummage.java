@@ -115,7 +115,11 @@ public class Rummage extends CoopRPAction {
                 }
 
                 if (time % 20 == 0) {
-                    target.sendTitle(TextUtils.getMsg("rummage_action.process.every_second.target.title", plugin), TextUtils.getMsg("rummage_action.process.every_second.target.subtitle", plugin), 0, 100, 0);
+                    String playerName = player.getName();
+                    String targetTitle = TextUtils.insertPlayerName(TextUtils.getMsg("rummage_action.process.every_second.target.title", plugin), playerName);
+                    String targetSubtitle = TextUtils.insertPlayerName(TextUtils.getMsg("rummage_action.process.every_second.target.subtitle", plugin), playerName);
+
+                    target.sendTitle(targetTitle, targetSubtitle, 0, 100, 0);
                 }
 
                 target.closeInventory();

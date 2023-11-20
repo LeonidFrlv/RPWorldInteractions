@@ -3,6 +3,7 @@
 # %percent% - сколько выполнено (в процентах) (работает только для действий)
 # %plugin% - чтобы вставить название плагина
 # %msg_path% - чтобы вставить путь к текущей строке (только с msg_is_null)
+# %username% -  ник игрока, который инициировал событие. Работает только для сообщений, адресованных target
 
 #plugin
 onEnable_msg: "%plugin% &aБыл включен!"
@@ -28,7 +29,7 @@ rummage_action: # может подобное в отдельный конфиг
         subtitle: "Вы проводите &6обыск"
       target:
         title: " "
-        subtitle: "Вас &cобыскивают"
+        subtitle: "Вас &cобыскивает &6%username%"
     cancel:
       action_bar_both: " "
       player:
@@ -50,7 +51,7 @@ rummage_action: # может подобное в отдельный конфиг
       action_bar_both: "%progress_bar%"
     every_second:
       target:
-        title: "Ваш инвентарь осматривают"
+        title: "Ваш инвентарь &cосматривают"
         subtitle: "Присядьте, чтобы &cпомешать"
     cancel: #complete тоже самое что и cancel у rummage
       action_bar_both: " "
@@ -60,6 +61,21 @@ rummage_action: # может подобное в отдельный конфиг
       target:
         title: " "
         subtitle: "Осмотр предметов &cпрерван &fили &aзавершён"
+push_action:
+  player_action_bar_messages:
+      - "Разве так можно?"
+      - "Зачем вы его толкнули?"
+      - "Ну и зачем?"
+      - "Какая наглость!"
+      - "Как вам не стыдно?"
+      - "Толкаться - грех..."
+  target_action_bar_messages:
+      - "Вас толкнули. Какая наглость! &6%username%"
+      - "Никто не смеет вас толкать! &6%username%"
+      - "Толкаться - плохо! &6%username%"
+      - "Ну всё, ты первый начал! &6%username%"
+
+
 progress_bar: #работает только с every_tick
   symbol: ∎
   max_bars: 21

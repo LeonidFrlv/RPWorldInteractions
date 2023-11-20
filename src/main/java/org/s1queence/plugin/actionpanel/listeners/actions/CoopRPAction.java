@@ -11,7 +11,6 @@ import org.s1queence.plugin.utils.TextUtils;
 
 public class CoopRPAction {
     private final Player player;
-
     private final Player target;
     private final RPWorldInteractions plugin;
     private final ItemStack launchItem;
@@ -28,10 +27,15 @@ public class CoopRPAction {
 
     protected void cancelAction(String path) {
         plugin.getPlayersInAction().remove(player);
+        String playerName = player.getName();
         MyUtils.sendActionBarMsg(player, TextUtils.getMsg(path + ".action_bar_both", plugin));
         MyUtils.sendActionBarMsg(target, TextUtils.getMsg(path + ".action_bar_both", plugin));
+
+        String targetTitle = TextUtils.insertPlayerName(TextUtils.getMsg(path + ".target.title", plugin), playerName);
+        String targetSubtitle = TextUtils.insertPlayerName(TextUtils.getMsg(path + ".target.subtitle", plugin), playerName);
+
         player.sendTitle(TextUtils.getMsg(path + ".player.title", plugin), TextUtils.getMsg(path + ".player.subtitle", plugin), 0, 75, 20);
-        target.sendTitle(TextUtils.getMsg(path + ".target.title", plugin), TextUtils.getMsg(path + ".target.subtitle", plugin), 0, 75, 20);
+        target.sendTitle(targetTitle, targetSubtitle, 0, 75, 20);
         player.setWalkSpeed(initialPlayerSpeed);
         target.setWalkSpeed(initialTargetSpeed);
         player.closeInventory();
@@ -64,6 +68,8 @@ public class CoopRPAction {
         if (!plugin.isActionCoolDownExpired(player) || !plugin.isActionCoolDownExpired(target)) return;
         plugin.getPlayersInAction().put(player, target);
         plugin.getItemActionCoolDown().put(player, target);
+        String playerName = player.getName();
+
 
         final float ACTION_TIME = seconds * 20;
         new BukkitRunnable() {
@@ -79,15 +85,24 @@ public class CoopRPAction {
 
                 if (currentTicks % 20 == 0) {
                     player.sendTitle(TextUtils.getMsg(textPath + ".preprocess.every_second.player.title", plugin), TextUtils.getMsg(textPath + ".preprocess.every_second.player.subtitle", plugin), 0, 100, 0);
-                    target.sendTitle(TextUtils.getMsg(textPath + ".preprocess.every_second.target.title", plugin), TextUtils.getMsg(textPath + ".preprocess.every_second.target.subtitle", plugin), 0, 100, 0);
+
+                    String targetTitle = TextUtils.insertPlayerName(TextUtils.getMsg(textPath + ".preprocess.every_second.target.title", plugin), playerName);
+                    String targetSubtitle = TextUtils.insertPlayerName(TextUtils.getMsg(textPath + ".preprocess.every_second.target.subtitle", plugin), playerName);
+
+                    target.sendTitle(targetTitle, targetSubtitle, 0, 100, 0);
                 }
 
                 if (currentTicks == 0) {
                     plugin.getItemActionCoolDown().remove(player);
                     MyUtils.sendActionBarMsg(player, TextUtils.getMsg(textPath + ".preprocess.complete.action_bar_both", plugin));
                     MyUtils.sendActionBarMsg(target, TextUtils.getMsg(textPath + ".preprocess.complete.action_bar_both", plugin));
+
+                    String targetTitle = TextUtils.insertPlayerName(TextUtils.getMsg(textPath + ".preprocess.complete.target.title", plugin), playerName);
+                    String targetSubtitle = TextUtils.insertPlayerName(TextUtils.getMsg(textPath + ".preprocess.complete.target.subtitle", plugin), playerName);
+
+                    target.sendTitle(targetTitle, targetSubtitle, 0, 75, 15);
                     player.sendTitle(TextUtils.getMsg(textPath + ".preprocess.complete.player.title", plugin), TextUtils.getMsg(textPath + ".preprocess.complete.player.subtitle", plugin), 0, 75, 15);
-                    target.sendTitle(TextUtils.getMsg(textPath + ".preprocess.complete.target.title", plugin), TextUtils.getMsg(textPath + ".preprocess.complete.target.subtitle", plugin), 0, 75, 15);
+
                     cancel();
                     return;
                 }

@@ -5,9 +5,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Pose;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -17,12 +15,17 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.listeners.actions.Rummage;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
+import org.s1queence.plugin.utils.MyUtils;
+import org.s1queence.plugin.utils.TextUtils;
+
+import java.util.List;
 
 public class ActionUseListener implements Listener {
 
@@ -91,6 +94,23 @@ public class ActionUseListener implements Listener {
         e.getBlock().getWorld().spawnFallingBlock(newLocation, clonedBlockData);
     }
 
+
+    @EventHandler
+    private void onVehicleDamage(VehicleDamageEvent e) {
+        if (!(e.getAttacker() instanceof Player)) return;
+        Player pusher = (Player) e.getAttacker();
+        Vehicle vehicle = e.getVehicle();
+        ItemStack item = pusher.getInventory().getItemInMainHand();
+        if (item.getType().equals(Material.AIR)) return;
+        String itemUUID = ActionPanelUtil.getActionUUID(item);
+        if (!ActionPanelUtil.isActionItem(item, plugin)) return;
+        if (!itemUUID.contains("#push")) return;
+        vehicle.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(0.3f));
+    }
+
+    private String getRandomElemFromStringList(List<String> list) {
+        return list.get((int) (Math.random() * list.size()));
+    }
     @EventHandler
     private void onPlayerDamageEntity(EntityDamageByEntityEvent e) {
         if (!(e.getDamager() instanceof Player)) return;
@@ -99,7 +119,24 @@ public class ActionUseListener implements Listener {
             if (frame.isVisible() || !frame.isEmpty()) return;
             frame.getWorld().dropItemNaturally(frame.getLocation(), frame.getItem());
             frame.remove();
+            return;
         }
+
+        Player pusher = (Player) e.getDamager();
+        Entity target = e.getEntity();
+        ItemStack item = pusher.getInventory().getItemInMainHand();
+        if (item.getType().equals(Material.AIR)) return;
+        String itemUUID = ActionPanelUtil.getActionUUID(item);
+        if (!ActionPanelUtil.isActionItem(item, plugin)) return;
+        if (!itemUUID.contains("#push")) return;
+        if (!(target instanceof LivingEntity) || target.getType().equals(EntityType.ARMOR_STAND)) return;
+        target.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(1));
+        e.setCancelled(true);
+        if (!(target instanceof Player)) return;
+        String targetMsg = TextUtils.insertPlayerName(getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.target_action_bar_messages")), pusher.getName());
+        String playerMsg = getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.player_action_bar_messages"));
+        MyUtils.sendActionBarMsg(pusher, playerMsg);
+        MyUtils.sendActionBarMsg((Player) target, targetMsg);
     }
 
     @EventHandler
@@ -113,7 +150,7 @@ public class ActionUseListener implements Listener {
         String itemUUID = ActionPanelUtil.getActionUUID(item);
         if (itemUUID == null || !ActionPanelUtil.isActionItem(item, plugin)) return;
 
-        if (e.getRightClicked() instanceof Player && itemUUID.contains("#rummage") ) {
+        if (e.getRightClicked() instanceof Player && itemUUID.contains("#rummage")) {
             Player target = (Player) e.getRightClicked();
             new Rummage(player, target, plugin);
         }

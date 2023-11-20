@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.s1queence.plugin.utils.MyUtils.empty;
-
-
 public class RPActionPanel {
     private final String title;
     private final Inventory inv;

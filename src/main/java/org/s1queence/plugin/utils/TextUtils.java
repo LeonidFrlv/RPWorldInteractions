@@ -15,6 +15,7 @@ import static org.s1queence.plugin.RPWorldInteractions.PLUGIN_TITLE;
 public class TextUtils {
     public static String getMsg(String path, RPWorldInteractions plugin) {
         String msg = plugin.getTextConfig().getString(path);
+
         if (msg == null)  {
             String nullMsgError = plugin.getTextConfig().getString("msg_is_null") == null ? "&6%plugin% FATAL ERROR." + " We recommend that you delete the text.yml file from the plugin folder and use reload config." : plugin.getTextConfig().getString("msg_is_null");
             return ChatColor.translateAlternateColorCodes('&', nullMsgError.replace("%plugin%", PLUGIN_TITLE).replace("%msg_path%", path));
@@ -22,6 +23,11 @@ public class TextUtils {
 
         return (ChatColor.translateAlternateColorCodes('&', msg.replace("%plugin%", PLUGIN_TITLE)));
     }
+
+    public static String insertPlayerName(String str, String playerName) {
+        return ChatColor.translateAlternateColorCodes('&', str.replace("%username%", playerName));
+    }
+
 
     public static String getProgressBarMsg(String path, String pb, String percent, RPWorldInteractions plugin) {
         String msg = plugin.getTextConfig().getString(path);
