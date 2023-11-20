@@ -1,21 +1,25 @@
 package org.s1queence.plugin.actionpanel.listeners;
 
 import dev.geco.gsit.api.GSitAPI;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.listeners.actions.Rummage;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
@@ -70,16 +74,38 @@ public class ActionUseListener implements Listener {
     }
 
     @EventHandler
+    private void onPlayerPlaceBlock(BlockPlaceEvent e) {
+        Player player = e.getPlayer();
+        PlayerInventory inv = player.getInventory();
+        ItemStack item = inv.getItemInMainHand();
+        BlockData clonedBlockData = e.getBlock().getBlockData().clone();
+        Material blockType = e.getBlock().getType();
+        if (!blockType.isOccluding() && !blockType.toString().contains("STAIRS")) return;
+        if (item.getType().equals(Material.AIR)) return;
+        String itemUUID = ActionPanelUtil.getActionUUID(item);
+        if (itemUUID == null || !ActionPanelUtil.isActionItem(item, plugin)) return;
+        if (!itemUUID.contains("#dropblock")) return;
+        Location blockLocation = e.getBlock().getLocation();
+        Location newLocation = blockLocation.add(0.5d, 0.0d, 0.5d);
+        e.getBlock().setType(Material.AIR);
+        e.getBlock().getWorld().spawnFallingBlock(newLocation, clonedBlockData);
+    }
+
+    @EventHandler
+    private void onPlayerDamageEntity(EntityDamageByEntityEvent e) {
+        if (!(e.getDamager() instanceof Player)) return;
+        if (e.getEntity() instanceof ItemFrame) {
+            ItemFrame frame = (ItemFrame) e.getEntity();
+            if (frame.isVisible() || !frame.isEmpty()) return;
+            frame.getWorld().dropItemNaturally(frame.getLocation(), frame.getItem());
+            frame.remove();
+        }
+    }
+
+    @EventHandler
     private void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
         if (!e.getHand().equals(EquipmentSlot.HAND)) return;
         Player player = e.getPlayer();
-        if (e.getRightClicked() instanceof ItemFrame && !player.getGameMode().equals(GameMode.CREATIVE)) {
-            ItemFrame frame = (ItemFrame) e.getRightClicked();
-            if (frame.isVisible()) return;
-            if (!frame.isEmpty()) return;
-            frame.remove();
-            return;
-        }
 
         if (plugin.isPlayerInAction(player) || !plugin.isActionCoolDownExpired(player) || plugin.isLaying(player)) return;
         ItemStack item = e.getPlayer().getInventory().getItemInMainHand();
@@ -97,13 +123,33 @@ public class ActionUseListener implements Listener {
     private void onPlayerInteract(PlayerInteractEvent e) {
         if (e.getHand() == null) return;
         if (!e.getHand().equals(EquipmentSlot.HAND)) return;
-        if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && !e.getAction().equals(Action.RIGHT_CLICK_AIR)) return;
-        if (e.getClickedBlock() != null && e.getClickedBlock().getType().isInteractable()) return;
+        Action action = e.getAction();
+        if (!action.equals(Action.RIGHT_CLICK_BLOCK) && !action.equals(Action.RIGHT_CLICK_AIR)) return;
+        Block clicked = e.getClickedBlock();
+        if (clicked != null && clicked.getType().isInteractable()) return;
         Player player = e.getPlayer();
         ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
         if (!ActionPanelUtil.isActionItem(itemInMainHand, plugin)) return;
+        if (player.isSneaking()) {
+            player.openInventory(plugin.getRPActionPanel().getInventory());
+            return;
+        }
+        if (!action.equals(Action.RIGHT_CLICK_BLOCK) || clicked == null) return;
 
-        if (!player.isSneaking()) return;
-        player.openInventory(plugin.getRPActionPanel().getInventory());
+        String itemUUID = ActionPanelUtil.getActionUUID(itemInMainHand);
+        if (itemUUID != null && !itemUUID.contains("#put")) return;
+
+        ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
+        if (itemInOffHand.getType().equals(Material.AIR)) return;
+
+        BlockFace blockFace = e.getBlockFace();
+        Block faced = clicked.getRelative(blockFace);
+        e.setCancelled(true);
+        World world = player.getWorld();
+        ItemFrame invItemFrame = world.spawn(faced.getLocation(), ItemFrame.class);
+        invItemFrame.setVisible(false);
+        invItemFrame.setItem(itemInOffHand);
+        itemInOffHand.setAmount(itemInOffHand.getAmount() - 1);
+        invItemFrame.setFacingDirection(blockFace);
     }
 }
