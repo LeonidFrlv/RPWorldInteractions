@@ -1,9 +1,12 @@
 package org.s1queence.plugin.actionpanel.listeners.actions;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.RPWorldInteractions;
@@ -38,12 +41,12 @@ public class Rummage extends CoopRPAction {
 
         if (plugin.getPlayersInAction().get(player) != target) return;
 
-        Inventory oldTargetInventory = target.getInventory();
+        Inventory targetInventory = target.getInventory();
         Inventory oldPlayerInventory = Bukkit.createInventory(null, 54, "Предметы " + target.getName());
         Inventory newTargetInventory = Bukkit.createInventory(null, 54, "Предметы " + target.getName());
         for (int i = 0; i < 54; i++) {
             if (i <= 40) {
-                newTargetInventory.setItem(i, oldTargetInventory.getItem(i));
+                newTargetInventory.setItem(i, targetInventory.getItem(i));
                 oldPlayerInventory.setItem(i, player.getInventory().getItem(i));
                 continue;
             }
@@ -63,7 +66,42 @@ public class Rummage extends CoopRPAction {
                     cancelAction("rummage_action.process.cancel");
                     if (!target.isDead() && target.isOnline()) {
                         for (int i = 0; i <= 40; i++) {
-                            oldTargetInventory.setItem(i, newTargetInventory.getItem(i));
+                            ItemStack currentItem = newTargetInventory.getItem(i);
+                            if (currentItem == null) continue;
+                            String mat = currentItem.getType().toString().toLowerCase();
+                            World world = target.getWorld();
+                            Location loc = target.getLocation();
+                            switch (i) {
+                                case 36: {
+                                    if (!mat.contains("boots")) {
+                                        world.dropItemNaturally(loc, currentItem);
+                                        currentItem = null;
+                                    }
+                                    break;
+                                }
+                                case 37: {
+                                    if (!mat.contains("leggings")) {
+                                        world.dropItemNaturally(loc, currentItem);
+                                        currentItem = null;
+                                    }
+                                    break;
+                                }
+                                case 38: {
+                                    if (!mat.contains("chestplate")) {
+                                        world.dropItemNaturally(loc, currentItem);
+                                        currentItem = null;
+                                    }
+                                    break;
+                                }
+                                case 39: {
+                                    if (!mat.contains("helmet") && !mat.equals("carved_pumpkin")) {
+                                        world.dropItemNaturally(loc, currentItem);
+                                        currentItem = null;
+                                    }
+                                    break;
+                                }
+                            }
+                            targetInventory.setItem(i, currentItem);
                         }
                     }
 
