@@ -6,8 +6,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.actionpanel.utils.ProgressBar;
 import org.s1queence.plugin.RPWorldInteractions;
-import org.s1queence.plugin.utils.MyUtils;
-import org.s1queence.plugin.utils.TextUtils;
+
+import static org.s1queence.api.S1Utils.sendActionBarMsg;
+import static org.s1queence.plugin.utils.TextUtils.*;
 
 public class CoopRPAction {
     private final Player player;
@@ -28,13 +29,13 @@ public class CoopRPAction {
     protected void cancelAction(String path) {
         plugin.getPlayersInAction().remove(player);
         String playerName = player.getName();
-        MyUtils.sendActionBarMsg(player, TextUtils.getMsg(path + ".action_bar_both", plugin));
-        MyUtils.sendActionBarMsg(target, TextUtils.getMsg(path + ".action_bar_both", plugin));
+        sendActionBarMsg(player, getMsg(path + ".action_bar_both", plugin));
+        sendActionBarMsg(target, getMsg(path + ".action_bar_both", plugin));
 
-        String targetTitle = TextUtils.insertPlayerName(TextUtils.getMsg(path + ".target.title", plugin), playerName);
-        String targetSubtitle = TextUtils.insertPlayerName(TextUtils.getMsg(path + ".target.subtitle", plugin), playerName);
+        String targetTitle = insertPlayerName(getMsg(path + ".target.title", plugin), playerName);
+        String targetSubtitle = insertPlayerName(getMsg(path + ".target.subtitle", plugin), playerName);
 
-        player.sendTitle(TextUtils.getMsg(path + ".player.title", plugin), TextUtils.getMsg(path + ".player.subtitle", plugin), 0, 75, 20);
+        player.sendTitle(getMsg(path + ".player.title", plugin), getMsg(path + ".player.subtitle", plugin), 0, 75, 20);
         target.sendTitle(targetTitle, targetSubtitle, 0, 75, 20);
         player.setWalkSpeed(initialPlayerSpeed);
         target.setWalkSpeed(initialTargetSpeed);
@@ -84,24 +85,24 @@ public class CoopRPAction {
                 }
 
                 if (currentTicks % 20 == 0) {
-                    player.sendTitle(TextUtils.getMsg(textPath + ".preprocess.every_second.player.title", plugin), TextUtils.getMsg(textPath + ".preprocess.every_second.player.subtitle", plugin), 0, 100, 0);
+                    player.sendTitle(getMsg(textPath + ".preprocess.every_second.player.title", plugin), getMsg(textPath + ".preprocess.every_second.player.subtitle", plugin), 0, 100, 0);
 
-                    String targetTitle = TextUtils.insertPlayerName(TextUtils.getMsg(textPath + ".preprocess.every_second.target.title", plugin), playerName);
-                    String targetSubtitle = TextUtils.insertPlayerName(TextUtils.getMsg(textPath + ".preprocess.every_second.target.subtitle", plugin), playerName);
+                    String targetTitle = insertPlayerName(getMsg(textPath + ".preprocess.every_second.target.title", plugin), playerName);
+                    String targetSubtitle = insertPlayerName(getMsg(textPath + ".preprocess.every_second.target.subtitle", plugin), playerName);
 
                     target.sendTitle(targetTitle, targetSubtitle, 0, 100, 0);
                 }
 
                 if (currentTicks == 0) {
                     plugin.getItemActionCoolDown().remove(player);
-                    MyUtils.sendActionBarMsg(player, TextUtils.getMsg(textPath + ".preprocess.complete.action_bar_both", plugin));
-                    MyUtils.sendActionBarMsg(target, TextUtils.getMsg(textPath + ".preprocess.complete.action_bar_both", plugin));
+                    sendActionBarMsg(player, getMsg(textPath + ".preprocess.complete.action_bar_both", plugin));
+                    sendActionBarMsg(target, getMsg(textPath + ".preprocess.complete.action_bar_both", plugin));
 
-                    String targetTitle = TextUtils.insertPlayerName(TextUtils.getMsg(textPath + ".preprocess.complete.target.title", plugin), playerName);
-                    String targetSubtitle = TextUtils.insertPlayerName(TextUtils.getMsg(textPath + ".preprocess.complete.target.subtitle", plugin), playerName);
+                    String targetTitle = insertPlayerName(getMsg(textPath + ".preprocess.complete.target.title", plugin), playerName);
+                    String targetSubtitle = insertPlayerName(getMsg(textPath + ".preprocess.complete.target.subtitle", plugin), playerName);
 
                     target.sendTitle(targetTitle, targetSubtitle, 0, 75, 15);
-                    player.sendTitle(TextUtils.getMsg(textPath + ".preprocess.complete.player.title", plugin), TextUtils.getMsg(textPath + ".preprocess.complete.player.subtitle", plugin), 0, 75, 15);
+                    player.sendTitle(getMsg(textPath + ".preprocess.complete.player.title", plugin), getMsg(textPath + ".preprocess.complete.player.subtitle", plugin), 0, 75, 15);
 
                     cancel();
                     return;
@@ -110,8 +111,8 @@ public class CoopRPAction {
                 currentTicks--;
                 player.closeInventory();
                 target.closeInventory();
-                MyUtils.sendActionBarMsg(player, TextUtils.getProgressBarMsg(textPath + ".preprocess.every_tick.action_bar_both", getCountDownProgressBar((int)ACTION_TIME, currentTicks),  "" + (int)(((ACTION_TIME - currentTicks) / ACTION_TIME) * 100), plugin));
-                MyUtils.sendActionBarMsg(target, TextUtils.getProgressBarMsg(textPath + ".preprocess.every_tick.action_bar_both", getCountDownProgressBar((int)ACTION_TIME, currentTicks),  "" + (int)(((ACTION_TIME - currentTicks) / ACTION_TIME) * 100), plugin));
+                sendActionBarMsg(player, getProgressBarMsg(textPath + ".preprocess.every_tick.action_bar_both", getCountDownProgressBar((int)ACTION_TIME, currentTicks),  "" + (int)(((ACTION_TIME - currentTicks) / ACTION_TIME) * 100), plugin));
+                sendActionBarMsg(target, getProgressBarMsg(textPath + ".preprocess.every_tick.action_bar_both", getCountDownProgressBar((int)ACTION_TIME, currentTicks),  "" + (int)(((ACTION_TIME - currentTicks) / ACTION_TIME) * 100), plugin));
             }
         }.runTaskTimer(plugin, 0, 1);
     }

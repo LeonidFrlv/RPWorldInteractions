@@ -38,13 +38,15 @@ public class RPWICommand implements CommandExecutor {
             try {
                 File textConfigFile = new File(plugin.getDataFolder(), "text.yml");
                 File actionInventoryConfigFile = new File(plugin.getDataFolder(), "action_inventory.yml");
+                File optionsConfig = new File(plugin.getDataFolder(), "options.yml");
 
                 if (!textConfigFile.exists()) plugin.setTextConfig(YamlDocument.create(new File(plugin.getDataFolder(), "text.yml"), plugin.getResource("text.yml")));
-
                 if (!actionInventoryConfigFile.exists()) plugin.setActionInventoryConfig(YamlDocument.create(new File(plugin.getDataFolder(), "action_inventory.yml"), plugin.getResource("action_inventory.yml")));
+                if (!optionsConfig.exists()) plugin.setOptionsConfig(YamlDocument.create(new File(plugin.getDataFolder(), "options.yml"), plugin.getResource("options.yml")));
 
                 plugin.getActionInventoryConfig().reload();
                 plugin.getTextConfig().reload();
+                plugin.getOptionsConfig().reload();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -54,6 +56,7 @@ public class RPWICommand implements CommandExecutor {
             plugin.setItemUsage(actionInventoryConfig.getStringList("action_inv.item_usage"));
             plugin.setRPActionPanel(new RPActionPanel(title == null ? "Действия" : title, actionInventoryConfig.getSection("action_inv.actions").getStringRouteMappedValues(true), plugin));
             plugin.setIsPanelCommandEnable(actionInventoryConfig.getBoolean("action_inv.command_enable"));
+            plugin.setIsOpenSound(actionInventoryConfig.getBoolean("action_inv.open_sound"));
 
             plugin.getItemActionCoolDown().clear();
             plugin.getPlayersInAction().clear();

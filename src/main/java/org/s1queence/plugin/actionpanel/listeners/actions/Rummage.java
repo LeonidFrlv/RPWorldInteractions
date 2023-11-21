@@ -10,15 +10,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.RPWorldInteractions;
-import org.s1queence.plugin.utils.MyUtils;
-import org.s1queence.plugin.utils.TextUtils;
 
+import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.plugin.utils.MyUtils.empty;
+import static org.s1queence.plugin.utils.TextUtils.*;
 
 public class Rummage extends CoopRPAction {
     public Rummage(@NotNull Player player, @NotNull Player target, @NotNull RPWorldInteractions plugin) {
         super(player, target, plugin);
-        actionCountDown(7, "rummage_action");
+        actionCountDown(plugin.getOptionsConfig().getInt("rummage.seconds"), "rummage_action");
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -42,8 +42,8 @@ public class Rummage extends CoopRPAction {
         if (plugin.getPlayersInAction().get(player) != target) return;
 
         Inventory targetInventory = target.getInventory();
-        Inventory oldPlayerInventory = Bukkit.createInventory(null, 54, "Предметы " + target.getName());
-        Inventory newTargetInventory = Bukkit.createInventory(null, 54, "Предметы " + target.getName());
+        Inventory oldPlayerInventory = Bukkit.createInventory(null, 54);
+        Inventory newTargetInventory = Bukkit.createInventory(null, 54, insertPlayerName(plugin.getOptionsConfig().getString("rummage.inv_title"), target.getName()));
         for (int i = 0; i < 54; i++) {
             if (i <= 40) {
                 newTargetInventory.setItem(i, targetInventory.getItem(i));
@@ -116,8 +116,8 @@ public class Rummage extends CoopRPAction {
 
                 if (time % 20 == 0) {
                     String playerName = player.getName();
-                    String targetTitle = TextUtils.insertPlayerName(TextUtils.getMsg("rummage_action.process.every_second.target.title", plugin), playerName);
-                    String targetSubtitle = TextUtils.insertPlayerName(TextUtils.getMsg("rummage_action.process.every_second.target.subtitle", plugin), playerName);
+                    String targetTitle = insertPlayerName(getMsg("rummage_action.process.every_second.target.title", plugin), playerName);
+                    String targetSubtitle = insertPlayerName(getMsg("rummage_action.process.every_second.target.subtitle", plugin), playerName);
 
                     target.sendTitle(targetTitle, targetSubtitle, 0, 100, 0);
                 }
@@ -125,8 +125,8 @@ public class Rummage extends CoopRPAction {
                 target.closeInventory();
                 time--;
                 int percent = (int)(((ACTION_TIME - time) / ACTION_TIME) * 100);
-                MyUtils.sendActionBarMsg(player, TextUtils.getProgressBarMsg("rummage_action.process.every_tick.action_bar_both", getCountDownProgressBar((int)ACTION_TIME, time), Integer.toString(percent), plugin));
-                MyUtils.sendActionBarMsg(target, TextUtils.getProgressBarMsg("rummage_action.process.every_tick.action_bar_both", getCountDownProgressBar((int)ACTION_TIME, time), Integer.toString(percent), plugin));
+                sendActionBarMsg(player, getProgressBarMsg("rummage_action.process.every_tick.action_bar_both", getCountDownProgressBar((int)ACTION_TIME, time), Integer.toString(percent), plugin));
+                sendActionBarMsg(target, getProgressBarMsg("rummage_action.process.every_tick.action_bar_both", getCountDownProgressBar((int)ACTION_TIME, time), Integer.toString(percent), plugin));
             }
         }.runTaskTimer(plugin, 0, 1);
     }

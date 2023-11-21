@@ -15,6 +15,7 @@
 action_inv:
   command_enable: false
   title: "Уникальные действия"
+  open_sound: true
   item_usage:
     - " "
     - "&7Чтобы открыть меню выбора возможных"

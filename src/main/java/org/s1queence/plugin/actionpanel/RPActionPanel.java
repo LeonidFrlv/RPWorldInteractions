@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
-import org.s1queence.plugin.utils.TextUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.s1queence.plugin.utils.MyUtils.empty;
+import static org.s1queence.plugin.utils.TextUtils.createItemFromConfig;
+import static org.s1queence.plugin.utils.TextUtils.getMsg;
+
 public class RPActionPanel {
     private final String title;
     private final Inventory inv;
@@ -59,9 +61,9 @@ public class RPActionPanel {
             if (key.contains(".")) continue;
             Map<String, Object> itemData = ((Section)actions.get(key)).getStringRouteMappedValues(true);
 
-            ItemStack is = TextUtils.createItemFromConfig(itemData, true);
+            ItemStack is = createItemFromConfig(itemData, true);
 
-            if (is == null) plugin.log(TextUtils.getMsg("alert_item_null", plugin));
+            if (is == null) plugin.log(getMsg("alert_item_null", plugin));
 
             actionsLi.add(is);
         }

@@ -6,7 +6,7 @@
 
     <groupId>org.s1queence</groupId>
     <artifactId>RPWorldInteractions</artifactId>
-    <version>0.4</version>
+    <version>0.4.1</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -42,6 +42,13 @@
             <groupId>dev.dejvokep</groupId>
             <artifactId>boosted-yaml-spigot</artifactId>
             <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.s1queence.lib</groupId>
+            <artifactId>s1queencelib</artifactId>
+            <version>0.1</version>
+            <scope>system</scope>
+            <systemPath>C:/Users/Denis/Desktop/TestServer/plugins/S1queenceLib-0.1.jar</systemPath>
         </dependency>
     </dependencies>
 

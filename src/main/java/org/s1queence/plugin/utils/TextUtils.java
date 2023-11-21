@@ -31,7 +31,7 @@ public class TextUtils {
 
     public static String getProgressBarMsg(String path, String pb, String percent, RPWorldInteractions plugin) {
         String msg = plugin.getTextConfig().getString(path);
-        return (ChatColor.translateAlternateColorCodes('&', msg.replace("%progress_bar%", pb).replace("%percent%", ChatColor.getByChar(plugin.getTextConfig().getString("progress_bar.percent_color")) + percent)));
+        return (ChatColor.translateAlternateColorCodes('&', msg.replace("%progress_bar%", pb).replace("%percent%", ChatColor.getByChar(plugin.getOptionsConfig().getString("progress_bar.percent_color")) + percent)));
     }
 
     private static boolean isPropertyNonDefaultOrNull(String property) {

@@ -22,10 +22,12 @@ import org.bukkit.inventory.PlayerInventory;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.listeners.actions.Rummage;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
-import org.s1queence.plugin.utils.MyUtils;
-import org.s1queence.plugin.utils.TextUtils;
 
 import java.util.List;
+
+import static org.s1queence.api.S1Booleans.isAllowableInteraction;
+import static org.s1queence.api.S1Utils.sendActionBarMsg;
+import static org.s1queence.plugin.utils.TextUtils.insertPlayerName;
 
 public class ActionUseListener implements Listener {
 
@@ -79,6 +81,14 @@ public class ActionUseListener implements Listener {
     @EventHandler
     private void onPlayerPlaceBlock(BlockPlaceEvent e) {
         Player player = e.getPlayer();
+        Block block = e.getBlock();
+        String errorText = isAllowableInteraction(player, block.getLocation());
+        if (errorText != null && !player.getGameMode().equals(GameMode.CREATIVE)) {
+            sendActionBarMsg(player, errorText);
+            e.setCancelled(true);
+            return;
+        }
+
         PlayerInventory inv = player.getInventory();
         ItemStack item = inv.getItemInMainHand();
         BlockData clonedBlockData = e.getBlock().getBlockData().clone();
@@ -87,6 +97,10 @@ public class ActionUseListener implements Listener {
         if (item.getType().equals(Material.AIR)) return;
         String itemUUID = ActionPanelUtil.getActionUUID(item);
         if (itemUUID == null || !ActionPanelUtil.isActionItem(item, plugin)) return;
+        if (itemUUID.contains("#put")) {
+            e.setCancelled(true);
+            return;
+        }
         if (!itemUUID.contains("#dropblock")) return;
         Location blockLocation = e.getBlock().getLocation();
         Location newLocation = blockLocation.add(0.5d, 0.0d, 0.5d);
@@ -133,16 +147,23 @@ public class ActionUseListener implements Listener {
         target.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(1));
         e.setCancelled(true);
         if (!(target instanceof Player)) return;
-        String targetMsg = TextUtils.insertPlayerName(getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.target_action_bar_messages")), pusher.getName());
-        String playerMsg = getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.player_action_bar_messages"));
-        MyUtils.sendActionBarMsg(pusher, playerMsg);
-        MyUtils.sendActionBarMsg((Player) target, targetMsg);
+        String targetMsg = insertPlayerName(getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.target_action_bar_messages")), pusher.getName());
+        String playerMsg = ChatColor.translateAlternateColorCodes('&', getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.player_action_bar_messages")));
+        sendActionBarMsg(pusher, playerMsg);
+        sendActionBarMsg((Player) target, targetMsg);
     }
 
     @EventHandler
     private void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
         if (!e.getHand().equals(EquipmentSlot.HAND)) return;
         Player player = e.getPlayer();
+
+        String errorText = isAllowableInteraction(player, e.getRightClicked().getLocation());
+        if (errorText != null && !player.getGameMode().equals(GameMode.CREATIVE)) {
+            sendActionBarMsg(player, errorText);
+            e.setCancelled(true);
+            return;
+        }
 
         if (plugin.isPlayerInAction(player) || !plugin.isActionCoolDownExpired(player) || plugin.isLaying(player)) return;
         ItemStack item = e.getPlayer().getInventory().getItemInMainHand();
@@ -165,20 +186,30 @@ public class ActionUseListener implements Listener {
         Block clicked = e.getClickedBlock();
         if (clicked != null && clicked.getType().isInteractable()) return;
         Player player = e.getPlayer();
+        boolean isInCreative = player.getGameMode().equals(GameMode.CREATIVE);
         ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
         if (!ActionPanelUtil.isActionItem(itemInMainHand, plugin)) return;
         if (player.isSneaking()) {
+            if (plugin.isOpenSound()) player.playSound(player.getLocation(), "rpwi.inv_open", 1.0f, 1.0f);
             player.openInventory(plugin.getRPActionPanel().getInventory());
             return;
         }
+
         if (!action.equals(Action.RIGHT_CLICK_BLOCK) || clicked == null) return;
+
+        String errorText = isAllowableInteraction(player, e.getClickedBlock().getLocation());
+        if (errorText != null && !isInCreative) {
+            sendActionBarMsg(player, errorText);
+            e.setCancelled(true);
+            return;
+        }
 
         String itemUUID = ActionPanelUtil.getActionUUID(itemInMainHand);
         if (itemUUID != null && !itemUUID.contains("#put")) return;
 
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
         if (itemInOffHand.getType().equals(Material.AIR)) return;
-
+        if (itemInOffHand.getType().toString().contains("MINECART") || itemInOffHand.getType().toString().contains("BOAT")) return;
         BlockFace blockFace = e.getBlockFace();
         Block faced = clicked.getRelative(blockFace);
         e.setCancelled(true);
@@ -186,7 +217,7 @@ public class ActionUseListener implements Listener {
         ItemFrame invItemFrame = world.spawn(faced.getLocation(), ItemFrame.class);
         invItemFrame.setVisible(false);
         invItemFrame.setItem(itemInOffHand);
-        itemInOffHand.setAmount(itemInOffHand.getAmount() - 1);
+        if (!isInCreative) itemInOffHand.setAmount(itemInOffHand.getAmount() - 1);
         invItemFrame.setFacingDirection(blockFace);
     }
 }
