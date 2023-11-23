@@ -35,8 +35,17 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
     private YamlDocument actionInventoryConfig;
     private YamlDocument textConfig;
     private YamlDocument optionsConfig;
-    private boolean command_enable;
-    private boolean open_sound;
+
+
+    private boolean
+            open_sound,
+            command_enable,
+            sit_sound,
+            lay_sound,
+            crawl_sound,
+            select_actionItem_sound
+    ;
+
 
     public void onEnable() {
         try {
@@ -52,8 +61,13 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
         String title = actionInventoryConfig.getString("action_inv.title");
         rp_action_panel = new RPActionPanel(title == null ? "Действия" : title, actionInventoryConfig.getSection("action_inv.actions").getStringRouteMappedValues(true), this);
         item_usage = actionInventoryConfig.getStringList("action_inv.item_usage");
+
         command_enable = actionInventoryConfig.getBoolean("action_inv.command_enable");
         open_sound = actionInventoryConfig.getBoolean("action_inv.open_sound");
+        sit_sound = optionsConfig.getBoolean("sounds.sit");
+        lay_sound = optionsConfig.getBoolean("sounds.lay");
+        crawl_sound = optionsConfig.getBoolean("sounds.crawl");
+        select_actionItem_sound = optionsConfig.getBoolean("sounds.select_actionItem");
 
         getServer().getPluginManager().registerEvents(new ActionUseListener(this), this);
         getServer().getPluginManager().registerEvents(new PreventDefaultForActionItems(this), this);
@@ -102,6 +116,15 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
     public boolean isOpenSound() {
         return open_sound;
     }
+
+    public boolean isSelectActionItemSound() {return select_actionItem_sound;}
+    public void setIsSelectActionItemSound(boolean newState) {select_actionItem_sound = newState;}
+    public boolean isSitSound() {return sit_sound;}
+    public void setIsSitSound(boolean newState) {sit_sound = newState;}
+    public boolean isLaySound() {return lay_sound;}
+    public void setIsLaySound(boolean newState) {lay_sound = newState;}
+    public boolean isCrawlSound() {return crawl_sound;}
+    public void setIsCrawlSound(boolean newState) {crawl_sound = newState;}
 
     public void setIsPanelCommandEnable(boolean newState) {
         command_enable = newState;

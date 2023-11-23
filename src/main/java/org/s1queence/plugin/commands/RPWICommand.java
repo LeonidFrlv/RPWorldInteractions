@@ -58,6 +58,11 @@ public class RPWICommand implements CommandExecutor {
             plugin.setIsPanelCommandEnable(actionInventoryConfig.getBoolean("action_inv.command_enable"));
             plugin.setIsOpenSound(actionInventoryConfig.getBoolean("action_inv.open_sound"));
 
+            plugin.setIsSitSound(plugin.getOptionsConfig().getBoolean("sounds.sit"));
+            plugin.setIsLaySound(plugin.getOptionsConfig().getBoolean("sounds.lay"));
+            plugin.setIsCrawlSound(plugin.getOptionsConfig().getBoolean("sounds.crawl"));
+            plugin.setIsSelectActionItemSound(plugin.getOptionsConfig().getBoolean("sounds.select_actionItem"));
+
             plugin.getItemActionCoolDown().clear();
             plugin.getPlayersInAction().clear();
 

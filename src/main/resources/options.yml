@@ -1,5 +1,5 @@
 #рекомендуется перезапустить сервер, после изменения ссылки ниже
-resource_pack: "https://drive.google.com/uc?export=download&confirm=no_antivirus&id=1IvQRM6I45TY-9FOV172hR3KYrf8ds93s"
+resource_pack: "https://drive.google.com/uc?export=download&confirm=no_antivirus&id=10KezmR3atakLm4n6rjA_OH_dnqzQlbnv"
 
 progress_bar: #работает только с every_tick
   symbol: ∎
@@ -21,3 +21,8 @@ rummage:
   seconds: 7 #время на "обыск"
   inv_title: "Предметы %username%" #не может быть отформатирован и в данном случае %username% - target.name
 
+sounds:
+  sit: true
+  lay: true
+  crawl: true
+  select_actionItem: true

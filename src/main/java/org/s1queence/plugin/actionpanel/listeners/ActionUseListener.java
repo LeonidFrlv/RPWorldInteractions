@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -60,22 +61,36 @@ public class ActionUseListener implements Listener {
 
         if (itemUUID.contains("#sit")) {
             GSitAPI.createSeat(block, player);
+            if (plugin.isSitSound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.7f, 1.0f);
         }
 
         if (itemUUID.contains("#lay")) {
             GSitAPI.createPose(block, player, Pose.SLEEPING);
+            if (plugin.isLaySound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.7f, 1.0f);
         }
 
         if (itemUUID.contains("#crawl")) {
             GSitAPI.startCrawl(player);
+            if (plugin.isCrawlSound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.7f, 1.0f);
         }
 
-        if (!itemUUID.contains("#crawl") && !itemUUID.contains("#lay") && !itemUUID.contains("#sit") && !itemUUID.contains("#close")) {
-            moveActionToInventory(player, clicked.clone());
+        if (!itemUUID.contains("#crawl") && !itemUUID.contains("#lay") && !itemUUID.contains("#sit")) {
+            if (!itemUUID.contains("#close")) moveActionToInventory(player, clicked.clone());
+            if (plugin.isSelectActionItemSound()) player.playSound(player.getLocation(), "rpwi.select_action-item", 0.65f, 1.0f);
         }
 
         player.closeInventory();
         e.setCancelled(true);
+    }
+    @EventHandler
+    private void onEntityHangingBreak(HangingBreakEvent e) {
+        Entity entity = e.getEntity();
+        if (!(entity instanceof ItemFrame)) return;
+        ItemFrame frame = (ItemFrame) entity;
+        if (frame.isVisible()) return;
+        e.setCancelled(true);
+        e.getEntity().getWorld().dropItemNaturally(frame.getLocation(), frame.getItem());
+        entity.remove();
     }
 
     @EventHandler
@@ -93,14 +108,14 @@ public class ActionUseListener implements Listener {
         ItemStack item = inv.getItemInMainHand();
         BlockData clonedBlockData = e.getBlock().getBlockData().clone();
         Material blockType = e.getBlock().getType();
-        if (!blockType.isOccluding() && !blockType.toString().contains("STAIRS")) return;
-        if (item.getType().equals(Material.AIR)) return;
         String itemUUID = ActionPanelUtil.getActionUUID(item);
-        if (itemUUID == null || !ActionPanelUtil.isActionItem(item, plugin)) return;
+        if (!ActionPanelUtil.isActionItem(item, plugin)) return;
         if (itemUUID.contains("#put")) {
             e.setCancelled(true);
             return;
         }
+        if (!blockType.isOccluding() && !blockType.toString().contains("STAIRS")) return;
+        if (item.getType().equals(Material.AIR)) return;
         if (!itemUUID.contains("#dropblock")) return;
         Location blockLocation = e.getBlock().getLocation();
         Location newLocation = blockLocation.add(0.5d, 0.0d, 0.5d);
@@ -184,12 +199,12 @@ public class ActionUseListener implements Listener {
         Action action = e.getAction();
         if (!action.equals(Action.RIGHT_CLICK_BLOCK) && !action.equals(Action.RIGHT_CLICK_AIR)) return;
         Block clicked = e.getClickedBlock();
-        if (clicked != null && clicked.getType().isInteractable()) return;
         Player player = e.getPlayer();
         boolean isInCreative = player.getGameMode().equals(GameMode.CREATIVE);
         ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
         if (!ActionPanelUtil.isActionItem(itemInMainHand, plugin)) return;
         if (player.isSneaking()) {
+            if (clicked != null && clicked.getType().isInteractable()) return;
             if (plugin.isOpenSound()) player.playSound(player.getLocation(), "rpwi.inv_open", 1.0f, 1.0f);
             player.openInventory(plugin.getRPActionPanel().getInventory());
             return;
