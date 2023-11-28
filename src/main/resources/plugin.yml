@@ -14,3 +14,7 @@ commands:
     permission: op
     aliases:
       - rpwi
+  vpt:
+    usage: /vpt
+  view:
+    usage: /view <get, set, remove> <username> <perm, temp if REMOVE or SET> <text if SET>

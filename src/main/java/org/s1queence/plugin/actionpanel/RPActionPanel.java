@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.s1queence.plugin.utils.MyUtils.empty;
+import static org.s1queence.plugin.utils.BarrierClickListener.empty;
 import static org.s1queence.plugin.utils.TextUtils.createItemFromConfig;
 import static org.s1queence.plugin.utils.TextUtils.getMsg;
 

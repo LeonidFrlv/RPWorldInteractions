@@ -39,14 +39,17 @@ public class RPWICommand implements CommandExecutor {
                 File textConfigFile = new File(plugin.getDataFolder(), "text.yml");
                 File actionInventoryConfigFile = new File(plugin.getDataFolder(), "action_inventory.yml");
                 File optionsConfig = new File(plugin.getDataFolder(), "options.yml");
+                File lookatConfigFile = new File(plugin.getDataFolder(), "lookat.yml");
 
                 if (!textConfigFile.exists()) plugin.setTextConfig(YamlDocument.create(new File(plugin.getDataFolder(), "text.yml"), plugin.getResource("text.yml")));
                 if (!actionInventoryConfigFile.exists()) plugin.setActionInventoryConfig(YamlDocument.create(new File(plugin.getDataFolder(), "action_inventory.yml"), plugin.getResource("action_inventory.yml")));
                 if (!optionsConfig.exists()) plugin.setOptionsConfig(YamlDocument.create(new File(plugin.getDataFolder(), "options.yml"), plugin.getResource("options.yml")));
+                if (!lookatConfigFile.exists()) plugin.setLookAtConfig(YamlDocument.create(new File(plugin.getDataFolder(), "lookat.yml"), plugin.getResource("lookat.yml")));
 
                 plugin.getActionInventoryConfig().reload();
                 plugin.getTextConfig().reload();
                 plugin.getOptionsConfig().reload();
+                plugin.getLookAtConfig().reload();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -62,6 +65,7 @@ public class RPWICommand implements CommandExecutor {
             plugin.setIsLaySound(plugin.getOptionsConfig().getBoolean("sounds.lay"));
             plugin.setIsCrawlSound(plugin.getOptionsConfig().getBoolean("sounds.crawl"));
             plugin.setIsSelectActionItemSound(plugin.getOptionsConfig().getBoolean("sounds.select_actionItem"));
+            plugin.setIsLookAtSound(plugin.getOptionsConfig().getBoolean("sounds.lookat_sound"));
 
             plugin.getItemActionCoolDown().clear();
             plugin.getPlayersInAction().clear();

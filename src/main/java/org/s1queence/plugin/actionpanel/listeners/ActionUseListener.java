@@ -21,14 +21,15 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.s1queence.plugin.RPWorldInteractions;
-import org.s1queence.plugin.actionpanel.listeners.actions.Rummage;
+import org.s1queence.plugin.actionpanel.listeners.actions.coop.Rummage;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
 import static org.s1queence.api.S1Booleans.isAllowableInteraction;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
-import static org.s1queence.plugin.utils.TextUtils.insertPlayerName;
+import static org.s1queence.plugin.utils.TextUtils.*;
 
 public class ActionUseListener implements Listener {
 
@@ -186,9 +187,18 @@ public class ActionUseListener implements Listener {
         String itemUUID = ActionPanelUtil.getActionUUID(item);
         if (itemUUID == null || !ActionPanelUtil.isActionItem(item, plugin)) return;
 
-        if (e.getRightClicked() instanceof Player && itemUUID.contains("#rummage")) {
+        if (e.getRightClicked() instanceof Player) {
             Player target = (Player) e.getRightClicked();
-            new Rummage(player, target, plugin);
+            if (itemUUID.contains("#rummage")) new Rummage(player, target, plugin);
+            if (itemUUID.contains("#lookat")) sendPlayerViewToPlayer(player, target.getName(), plugin);
+            return;
+        }
+
+        if (itemUUID.contains("#lookat")) {
+            String eType = e.getRightClicked().getType().toString();
+            String eView = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "default_entities", eType))).orElse(getMsg("lookat.no_entity_view", plugin));
+            player.sendMessage(getMsg("lookat.entity_view_text", plugin) + ChatColor.RESET + eView);
+            if (plugin.isLookAtSound()) player.playSound(player.getLocation(), "rpwi.lookat", 0.7f, 1.0f);
         }
     }
 

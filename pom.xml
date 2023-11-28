@@ -6,7 +6,7 @@
 
     <groupId>org.s1queence</groupId>
     <artifactId>RPWorldInteractions</artifactId>
-    <version>0.4.2</version>
+    <version>0.4.3</version>
     <packaging>jar</packaging>
 
     <name>RPWorldInteractions</name>
@@ -65,7 +65,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <outputDirectory>C:\Users\Denis\Desktop\TestServer\plugins\</outputDirectory>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
@@ -93,6 +92,14 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <outputDirectory>C:\Users\Denis\Desktop\TestServer\plugins\</outputDirectory>
+                </configuration>
             </plugin>
         </plugins>
         <resources>

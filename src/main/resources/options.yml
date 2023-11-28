@@ -1,5 +1,5 @@
 #рекомендуется перезапустить сервер, после изменения ссылки ниже
-resource_pack: "https://drive.google.com/uc?export=download&confirm=no_antivirus&id=10KezmR3atakLm4n6rjA_OH_dnqzQlbnv"
+resource_pack: "https://drive.google.com/uc?export=download&confirm=no_antivirus&id=13Y4sdSSPzrQq7fx3yHg8yPP9CYM9nKWa"
 
 progress_bar: #работает только с every_tick
   symbol: ∎
@@ -26,3 +26,10 @@ sounds:
   lay: true
   crawl: true
   select_actionItem: true
+  lookat_sound: true
+
+view_paint_tool: # "кисточка", чтобы добавлять описания блокам
+  material: BLAZE_ROD
+  name: "&6VPT"
+  cmd: default
+  lore: default

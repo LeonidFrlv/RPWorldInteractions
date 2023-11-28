@@ -7,11 +7,14 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.s1queence.plugin.RPWorldInteractions;
 
-import static org.s1queence.plugin.utils.MyUtils.empty;
+import static org.s1queence.plugin.utils.TextUtils.createItemFromConfig;
 
 public class BarrierClickListener implements Listener {
     private final RPWorldInteractions plugin;
     public BarrierClickListener(RPWorldInteractions plugin) {this.plugin = plugin;}
+    public static ItemStack empty(RPWorldInteractions plugin) {
+        return createItemFromConfig(plugin.getOptionsConfig().getSection("empty_item").getStringRouteMappedValues(true), false);
+    }
     @EventHandler
     private void onPlayerClick(InventoryClickEvent e) {
         Inventory clickedInventory = e.getClickedInventory();

@@ -1,7 +1,9 @@
 package org.s1queence.plugin.utils;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.s1queence.plugin.RPWorldInteractions;
@@ -10,11 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
 import static org.s1queence.plugin.RPWorldInteractions.PLUGIN_TITLE;
 
 public class TextUtils {
     public static String getMsg(String path, RPWorldInteractions plugin) {
-        String msg = plugin.getTextConfig().getString(path);
+        String msg = plugin.getTextConfig().getString(path); //место плагина суй сюда просто YamlDocument и тогда сможешь из разных файлов доставать
 
         if (msg == null)  {
             String nullMsgError = plugin.getTextConfig().getString("msg_is_null") == null ? "&6%plugin% FATAL ERROR." + " We recommend that you delete the text.yml file from the plugin folder and use reload config." : plugin.getTextConfig().getString("msg_is_null");
@@ -81,5 +84,32 @@ public class TextUtils {
 
         is.setItemMeta(im);
         return is;
+    }
+
+    public static void sendPlayerViewToPlayer(Player receiver, String holderName, RPWorldInteractions plugin) {
+        YamlDocument lookAtConfig = plugin.getLookAtConfig();
+        String permView = ofNullable(lookAtConfig.getString(String.join(".", "players", holderName, "perm"))).orElse(getMsg("lookat.no_perm", plugin));
+        String tempView = ofNullable(lookAtConfig.getString(String.join(".", "players", holderName, "temp"))).orElse(getMsg("lookat.no_temp", plugin));
+        receiver.sendMessage(getMsg("lookat.name_text", plugin) + ChatColor.RESET + holderName);
+        receiver.sendMessage(getMsg("lookat.perm_view_text", plugin) + ChatColor.RESET + permView);
+        receiver.sendMessage(getMsg("lookat.temp_view_text", plugin) + ChatColor.RESET + tempView);
+        if (plugin.isLookAtSound()) receiver.playSound(receiver.getLocation(), "rpwi.lookat", 0.7f, 1.0f);
+    }
+
+    public static List<String> getRowsListFromString(String toParse, int maxRowLength) {
+        List<String> buffer = new ArrayList<>();
+
+        if (maxRowLength <= 5) maxRowLength = 14;
+        StringBuilder row = new StringBuilder();
+        for (int i = 0; i < toParse.length(); i++) {
+            char current = toParse.charAt(i);
+            if (i % maxRowLength == 0 && i != 0) {
+                buffer.add(row.toString());
+                row = new StringBuilder();
+            }
+            row.append(current);
+            if (i == toParse.length() - 1) buffer.add(row.toString());
+        }
+        return buffer;
     }
 }

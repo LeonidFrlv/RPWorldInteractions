@@ -1,4 +1,4 @@
-package org.s1queence.plugin.actionpanel.listeners.actions;
+package org.s1queence.plugin.actionpanel.listeners.actions.coop;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

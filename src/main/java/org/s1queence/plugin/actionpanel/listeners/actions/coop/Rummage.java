@@ -1,4 +1,4 @@
-package org.s1queence.plugin.actionpanel.listeners.actions;
+package org.s1queence.plugin.actionpanel.listeners.actions.coop;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.RPWorldInteractions;
 
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
-import static org.s1queence.plugin.utils.MyUtils.empty;
+import static org.s1queence.plugin.utils.BarrierClickListener.empty;
 import static org.s1queence.plugin.utils.TextUtils.*;
 
 public class Rummage extends CoopRPAction {
@@ -67,7 +67,10 @@ public class Rummage extends CoopRPAction {
                     if (!target.isDead() && target.isOnline()) {
                         for (int i = 0; i <= 40; i++) {
                             ItemStack currentItem = newTargetInventory.getItem(i);
-                            if (currentItem == null) continue;
+                            if (currentItem == null) {
+                                targetInventory.setItem(i, null);
+                                continue;
+                            }
                             String mat = currentItem.getType().toString().toLowerCase();
                             World world = target.getWorld();
                             Location loc = target.getLocation();
