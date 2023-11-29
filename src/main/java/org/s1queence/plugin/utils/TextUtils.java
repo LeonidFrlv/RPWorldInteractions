@@ -16,11 +16,11 @@ import static java.util.Optional.ofNullable;
 import static org.s1queence.plugin.RPWorldInteractions.PLUGIN_TITLE;
 
 public class TextUtils {
-    public static String getMsg(String path, RPWorldInteractions plugin) {
-        String msg = plugin.getTextConfig().getString(path); //место плагина суй сюда просто YamlDocument и тогда сможешь из разных файлов доставать
+    public static String getMsg(String path, YamlDocument config) {
+        String msg = config.getString(path);
 
         if (msg == null)  {
-            String nullMsgError = plugin.getTextConfig().getString("msg_is_null") == null ? "&6%plugin% FATAL ERROR." + " We recommend that you delete the text.yml file from the plugin folder and use reload config." : plugin.getTextConfig().getString("msg_is_null");
+            String nullMsgError = ofNullable(config.getString("msg_is_null")).orElse("&6%plugin% FATAL ERROR." + " We recommend that you delete the text.yml file from the plugin folder and use reload config.");
             return ChatColor.translateAlternateColorCodes('&', nullMsgError.replace("%plugin%", PLUGIN_TITLE).replace("%msg_path%", path));
         }
 
@@ -88,11 +88,11 @@ public class TextUtils {
 
     public static void sendPlayerViewToPlayer(Player receiver, String holderName, RPWorldInteractions plugin) {
         YamlDocument lookAtConfig = plugin.getLookAtConfig();
-        String permView = ofNullable(lookAtConfig.getString(String.join(".", "players", holderName, "perm"))).orElse(getMsg("lookat.no_perm", plugin));
-        String tempView = ofNullable(lookAtConfig.getString(String.join(".", "players", holderName, "temp"))).orElse(getMsg("lookat.no_temp", plugin));
-        receiver.sendMessage(getMsg("lookat.name_text", plugin) + ChatColor.RESET + holderName);
-        receiver.sendMessage(getMsg("lookat.perm_view_text", plugin) + ChatColor.RESET + permView);
-        receiver.sendMessage(getMsg("lookat.temp_view_text", plugin) + ChatColor.RESET + tempView);
+        String permView = ofNullable(lookAtConfig.getString(String.join(".", "players", holderName, "perm"))).orElse(getMsg("lookat.no_perm", plugin.getTextConfig()));
+        String tempView = ofNullable(lookAtConfig.getString(String.join(".", "players", holderName, "temp"))).orElse(getMsg("lookat.no_temp", plugin.getTextConfig()));
+        receiver.sendMessage(getMsg("lookat.name_text", plugin.getTextConfig()) + ChatColor.RESET + holderName);
+        receiver.sendMessage(getMsg("lookat.perm_view_text", plugin.getTextConfig()) + ChatColor.RESET + permView);
+        receiver.sendMessage(getMsg("lookat.temp_view_text", plugin.getTextConfig()) + ChatColor.RESET + tempView);
         if (plugin.isLookAtSound()) receiver.playSound(receiver.getLocation(), "rpwi.lookat", 0.7f, 1.0f);
     }
 

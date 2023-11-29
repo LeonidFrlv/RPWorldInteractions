@@ -29,13 +29,13 @@ public class CoopRPAction {
     protected void cancelAction(String path) {
         plugin.getPlayersInAction().remove(player);
         String playerName = player.getName();
-        sendActionBarMsg(player, getMsg(path + ".action_bar_both", plugin));
-        sendActionBarMsg(target, getMsg(path + ".action_bar_both", plugin));
+        sendActionBarMsg(player, getMsg(path + ".action_bar_both", plugin.getTextConfig()));
+        sendActionBarMsg(target, getMsg(path + ".action_bar_both", plugin.getTextConfig()));
 
-        String targetTitle = insertPlayerName(getMsg(path + ".target.title", plugin), playerName);
-        String targetSubtitle = insertPlayerName(getMsg(path + ".target.subtitle", plugin), playerName);
+        String targetTitle = insertPlayerName(getMsg(path + ".target.title", plugin.getTextConfig()), playerName);
+        String targetSubtitle = insertPlayerName(getMsg(path + ".target.subtitle", plugin.getTextConfig()), playerName);
 
-        player.sendTitle(getMsg(path + ".player.title", plugin), getMsg(path + ".player.subtitle", plugin), 0, 75, 20);
+        player.sendTitle(getMsg(path + ".player.title", plugin.getTextConfig()), getMsg(path + ".player.subtitle", plugin.getTextConfig()), 0, 75, 20);
         target.sendTitle(targetTitle, targetSubtitle, 0, 75, 20);
         player.setWalkSpeed(initialPlayerSpeed);
         target.setWalkSpeed(initialTargetSpeed);
@@ -85,24 +85,24 @@ public class CoopRPAction {
                 }
 
                 if (currentTicks % 20 == 0) {
-                    player.sendTitle(getMsg(textPath + ".preprocess.every_second.player.title", plugin), getMsg(textPath + ".preprocess.every_second.player.subtitle", plugin), 0, 100, 0);
+                    player.sendTitle(getMsg(textPath + ".preprocess.every_second.player.title", plugin.getTextConfig()), getMsg(textPath + ".preprocess.every_second.player.subtitle", plugin.getTextConfig()), 0, 100, 0);
 
-                    String targetTitle = insertPlayerName(getMsg(textPath + ".preprocess.every_second.target.title", plugin), playerName);
-                    String targetSubtitle = insertPlayerName(getMsg(textPath + ".preprocess.every_second.target.subtitle", plugin), playerName);
+                    String targetTitle = insertPlayerName(getMsg(textPath + ".preprocess.every_second.target.title", plugin.getTextConfig()), playerName);
+                    String targetSubtitle = insertPlayerName(getMsg(textPath + ".preprocess.every_second.target.subtitle", plugin.getTextConfig()), playerName);
 
                     target.sendTitle(targetTitle, targetSubtitle, 0, 100, 0);
                 }
 
                 if (currentTicks == 0) {
                     plugin.getItemActionCoolDown().remove(player);
-                    sendActionBarMsg(player, getMsg(textPath + ".preprocess.complete.action_bar_both", plugin));
-                    sendActionBarMsg(target, getMsg(textPath + ".preprocess.complete.action_bar_both", plugin));
+                    sendActionBarMsg(player, getMsg(textPath + ".preprocess.complete.action_bar_both", plugin.getTextConfig()));
+                    sendActionBarMsg(target, getMsg(textPath + ".preprocess.complete.action_bar_both", plugin.getTextConfig()));
 
-                    String targetTitle = insertPlayerName(getMsg(textPath + ".preprocess.complete.target.title", plugin), playerName);
-                    String targetSubtitle = insertPlayerName(getMsg(textPath + ".preprocess.complete.target.subtitle", plugin), playerName);
+                    String targetTitle = insertPlayerName(getMsg(textPath + ".preprocess.complete.target.title", plugin.getTextConfig()), playerName);
+                    String targetSubtitle = insertPlayerName(getMsg(textPath + ".preprocess.complete.target.subtitle", plugin.getTextConfig()), playerName);
 
                     target.sendTitle(targetTitle, targetSubtitle, 0, 75, 15);
-                    player.sendTitle(getMsg(textPath + ".preprocess.complete.player.title", plugin), getMsg(textPath + ".preprocess.complete.player.subtitle", plugin), 0, 75, 15);
+                    player.sendTitle(getMsg(textPath + ".preprocess.complete.player.title", plugin.getTextConfig()), getMsg(textPath + ".preprocess.complete.player.subtitle", plugin.getTextConfig()), 0, 75, 15);
 
                     cancel();
                     return;

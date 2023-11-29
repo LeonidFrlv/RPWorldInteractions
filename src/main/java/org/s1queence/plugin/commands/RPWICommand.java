@@ -13,6 +13,7 @@ import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 import java.io.File;
 import java.util.Arrays;
 
+import static java.util.Optional.ofNullable;
 import static org.s1queence.plugin.utils.TextUtils.getMsg;
 
 
@@ -30,7 +31,7 @@ public class RPWICommand implements CommandExecutor {
         String action = args[0];
 
         if (!Arrays.asList(possiblesActions).contains(action.toLowerCase())) {
-            sender.sendMessage(getMsg("unknown_rpwi_command_action_alert", plugin));
+            sender.sendMessage(getMsg("unknown_rpwi_command_action_alert", plugin.getTextConfig()));
             return true;
         }
 
@@ -46,6 +47,7 @@ public class RPWICommand implements CommandExecutor {
                 if (!optionsConfig.exists()) plugin.setOptionsConfig(YamlDocument.create(new File(plugin.getDataFolder(), "options.yml"), plugin.getResource("options.yml")));
                 if (!lookatConfigFile.exists()) plugin.setLookAtConfig(YamlDocument.create(new File(plugin.getDataFolder(), "lookat.yml"), plugin.getResource("lookat.yml")));
 
+                if (plugin.getActionInventoryConfig().hasDefaults()) plugin.getActionInventoryConfig().getDefaults().clear();
                 plugin.getActionInventoryConfig().reload();
                 plugin.getTextConfig().reload();
                 plugin.getOptionsConfig().reload();
@@ -54,23 +56,24 @@ public class RPWICommand implements CommandExecutor {
                 throw new RuntimeException(e);
             }
             YamlDocument actionInventoryConfig = plugin.getActionInventoryConfig();
+            YamlDocument optionsConfig = plugin.getOptionsConfig();
 
             String title = actionInventoryConfig.getString("action_inv.title");
             plugin.setItemUsage(actionInventoryConfig.getStringList("action_inv.item_usage"));
-            plugin.setRPActionPanel(new RPActionPanel(title == null ? "Действия" : title, actionInventoryConfig.getSection("action_inv.actions").getStringRouteMappedValues(true), plugin));
+            plugin.setRPActionPanel(new RPActionPanel(ofNullable(title).orElse("Actions"), actionInventoryConfig.getSection("action_inv.actions").getStringRouteMappedValues(true), actionInventoryConfig.getInt("action_inv.size"), plugin));
             plugin.setIsPanelCommandEnable(actionInventoryConfig.getBoolean("action_inv.command_enable"));
             plugin.setIsOpenSound(actionInventoryConfig.getBoolean("action_inv.open_sound"));
 
-            plugin.setIsSitSound(plugin.getOptionsConfig().getBoolean("sounds.sit"));
-            plugin.setIsLaySound(plugin.getOptionsConfig().getBoolean("sounds.lay"));
-            plugin.setIsCrawlSound(plugin.getOptionsConfig().getBoolean("sounds.crawl"));
-            plugin.setIsSelectActionItemSound(plugin.getOptionsConfig().getBoolean("sounds.select_actionItem"));
-            plugin.setIsLookAtSound(plugin.getOptionsConfig().getBoolean("sounds.lookat_sound"));
+            plugin.setIsSitSound(optionsConfig.getBoolean("sounds.sit"));
+            plugin.setIsLaySound(optionsConfig.getBoolean("sounds.lay"));
+            plugin.setIsCrawlSound(optionsConfig.getBoolean("sounds.crawl"));
+            plugin.setIsSelectActionItemSound(optionsConfig.getBoolean("sounds.select_actionItem"));
+            plugin.setIsLookAtSound(optionsConfig.getBoolean("sounds.lookat_sound"));
 
             plugin.getItemActionCoolDown().clear();
             plugin.getPlayersInAction().clear();
 
-            String reloadMsg = getMsg("onReload_msg", plugin);
+            String reloadMsg = getMsg("onReload_msg", plugin.getTextConfig());
             if (sender instanceof Player) sender.sendMessage(reloadMsg);
             plugin.log(reloadMsg);
 

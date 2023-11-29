@@ -23,7 +23,7 @@ public abstract class ActionPanelUtil {
 
     public static boolean isActionItem(ItemStack item, RPWorldInteractions plugin) {
         if (getActionUUID(item) == null) return false;
-        for (ItemStack action : plugin.getRPActionPanel().getActionsList()) {
+        for (ItemStack action : plugin.getRPActionPanel().getActionItemsList()) {
             ItemStack cloned = action.clone();
             insertLoreBeforeEnd(cloned, plugin.getItemUsage());
             if (cloned.equals(item)) return true;
@@ -46,7 +46,7 @@ public abstract class ActionPanelUtil {
     }
 
     public static void addDefaultActionItem(Player player, RPWorldInteractions plugin) {
-        ItemStack cloned = plugin.getRPActionPanel().getActionsList().get(0).clone();
+        ItemStack cloned = plugin.getRPActionPanel().getActionItemsList().get(0).clone();
         ActionPanelUtil.insertLoreBeforeEnd(cloned, plugin.getItemUsage());
         player.getInventory().setItem(8, cloned);
     }

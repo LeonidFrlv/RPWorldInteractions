@@ -119,8 +119,8 @@ public class Rummage extends CoopRPAction {
 
                 if (time % 20 == 0) {
                     String playerName = player.getName();
-                    String targetTitle = insertPlayerName(getMsg("rummage_action.process.every_second.target.title", plugin), playerName);
-                    String targetSubtitle = insertPlayerName(getMsg("rummage_action.process.every_second.target.subtitle", plugin), playerName);
+                    String targetTitle = insertPlayerName(getMsg("rummage_action.process.every_second.target.title", plugin.getTextConfig()), playerName);
+                    String targetSubtitle = insertPlayerName(getMsg("rummage_action.process.every_second.target.subtitle", plugin.getTextConfig()), playerName);
 
                     target.sendTitle(targetTitle, targetSubtitle, 0, 100, 0);
                 }

@@ -5,20 +5,13 @@ scoreboard:
 range: 20 # дальность, на которой игрок "видит" блоки и энтити
 
 players:
-  Archvile:
+  EXAMPLE_PLAYER:
     perm: "постоянное описание (несменяемое самим игроком-владельцем описания)"
     temp: "временное описание (сменяемое)"
 
-market_blocks:
-  #location:
-    #material: stringmaterial
-    #view: string
+default_blocks: null #material: string
 
-default_blocks:
-  #material: string
-
-default_entities:
-  #entity_type: string. Все, кроме Player
+default_entities: null #entity_type: string.
 
 #нужны пермишены и какой-то одельный файлик для пермишенов чтобы тупо не забыть какие есть и зачем нужны
 # ограничить надо описание, но насколько символов его сделать?

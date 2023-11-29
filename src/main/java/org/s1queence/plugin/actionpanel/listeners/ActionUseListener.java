@@ -196,8 +196,8 @@ public class ActionUseListener implements Listener {
 
         if (itemUUID.contains("#lookat")) {
             String eType = e.getRightClicked().getType().toString();
-            String eView = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "default_entities", eType))).orElse(getMsg("lookat.no_entity_view", plugin));
-            player.sendMessage(getMsg("lookat.entity_view_text", plugin) + ChatColor.RESET + eView);
+            String eView = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "default_entities", eType))).orElse(getMsg("lookat.no_entity_view", plugin.getTextConfig()));
+            player.sendMessage(getMsg("lookat.entity_view_text", plugin.getTextConfig()) + ChatColor.RESET + eView);
             if (plugin.isLookAtSound()) player.playSound(player.getLocation(), "rpwi.lookat", 0.7f, 1.0f);
         }
     }

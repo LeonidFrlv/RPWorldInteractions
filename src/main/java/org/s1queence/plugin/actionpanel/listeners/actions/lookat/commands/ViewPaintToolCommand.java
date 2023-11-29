@@ -16,17 +16,17 @@ public class ViewPaintToolCommand implements CommandExecutor {
     public ViewPaintToolCommand(RPWorldInteractions plugin) {this.plugin = plugin;}
 
     public static ItemStack viewPaintTool(RPWorldInteractions plugin) {
-        return createItemFromConfig(plugin.getOptionsConfig().getSection("view_paint_tool").getStringRouteMappedValues(true), false); // нужна какая-то особенная хуета для этого типо мб uuid добавить? Ну чтобы по айдишнику проверять, а то пизда ведь, описание то меняется, значит она нихуя не первоначальные настроечки имеет))
+        return createItemFromConfig(plugin.getOptionsConfig().getSection("view_paint_tool").getStringRouteMappedValues(true), false);
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (!(commandSender instanceof Player)) return true;
         if (args.length != 0) return false;
-        commandSender.sendMessage(getMsg("lookat.vpt_received", plugin));
+        commandSender.sendMessage(getMsg("lookat.vpt_received", plugin.getTextConfig()));
         Player sender = (Player) commandSender;
         if (!sender.hasPermission("rpwi.perms.vpt")) {
-            sender.sendMessage(getMsg("no_permission_alert", plugin));
+            sender.sendMessage(getMsg("no_permission_alert", plugin.getTextConfig()));
             return true;
         }
         sender.getInventory().addItem(viewPaintTool(plugin));

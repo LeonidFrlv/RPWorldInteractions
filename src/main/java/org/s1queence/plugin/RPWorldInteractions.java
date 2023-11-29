@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
 import static org.s1queence.plugin.utils.TextUtils.getMsg;
 
 public class RPWorldInteractions extends JavaPlugin implements Listener {
@@ -48,7 +49,8 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
 
     public void onEnable() {
         try {
-            actionInventoryConfig = YamlDocument.create(new File(getDataFolder(), "action_inventory.yml"), getResource("action_inventory.yml"));
+            File serverAICFile = new File(getDataFolder(), "action_inventory.yml");
+            actionInventoryConfig = serverAICFile.exists() ? YamlDocument.create(serverAICFile) : YamlDocument.create(new File(getDataFolder(), "action_inventory.yml"), getResource("action_inventory.yml"));
             textConfig = YamlDocument.create(new File(getDataFolder(), "text.yml"), getResource("text.yml"));
             optionsConfig = YamlDocument.create(new File(getDataFolder(), "options.yml"), getResource("options.yml"));
             lookAtConfig = YamlDocument.create(new File(getDataFolder(), "lookat.yml"), getResource("lookat.yml"));
@@ -56,10 +58,10 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
             throw new RuntimeException(exception);
         }
 
-        log(getMsg("onEnable_msg", this));
+        log(getMsg("onEnable_msg", textConfig));
 
         String title = actionInventoryConfig.getString("action_inv.title");
-        rp_action_panel = new RPActionPanel(title == null ? "Действия" : title, actionInventoryConfig.getSection("action_inv.actions").getStringRouteMappedValues(true), this);
+        rp_action_panel = new RPActionPanel(ofNullable(title).orElse("Actions"), actionInventoryConfig.getSection("action_inv.actions").getStringRouteMappedValues(true), actionInventoryConfig.getInt("action_inv.size"), this);
         item_usage = actionInventoryConfig.getStringList("action_inv.item_usage");
 
         command_enable = actionInventoryConfig.getBoolean("action_inv.command_enable");
@@ -88,7 +90,7 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
     }
 
     public void onDisable() {
-        log(getMsg("onDisable_msg", this));
+        log(getMsg("onDisable_msg", textConfig));
     }
 
     public void log(String msgToConsoleLog) {
@@ -144,7 +146,7 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
     }
 
     public YamlDocument getActionInventoryConfig() {return actionInventoryConfig;}
-    public void setActionInventoryConfig(YamlDocument newState) {textConfig = newState;}
+    public void setActionInventoryConfig(YamlDocument newState) {actionInventoryConfig = newState;}
     public YamlDocument getOptionsConfig() {return optionsConfig;}
     public void setOptionsConfig(YamlDocument newState) {optionsConfig  = newState;}
     public YamlDocument getLookAtConfig() {return lookAtConfig;}

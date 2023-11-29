@@ -34,7 +34,7 @@ public class ViewCommand implements CommandExecutor {
 
         Player target = plugin.getServer().getPlayer(args[1]);
         if (target == null) {
-            sender.sendMessage(getMsg("player_not_found", plugin));
+            sender.sendMessage(getMsg("player_not_found", plugin.getTextConfig()));
             return true;
         }
 
@@ -43,7 +43,7 @@ public class ViewCommand implements CommandExecutor {
 
         if (action.equals("get")) {
             if (!isSelf && !sender.hasPermission("rpwi.perms.getOtherView") && !isHasBypass) {
-                sender.sendMessage(getMsg("no_permission_alert", plugin));
+                sender.sendMessage(getMsg("no_permission_alert", plugin.getTextConfig()));
                 return true;
             }
             sendPlayerViewToPlayer(sender, target.getName(), plugin);
@@ -60,7 +60,7 @@ public class ViewCommand implements CommandExecutor {
         boolean isNotCanChangeTempView = viewType.equals("temp") && !sender.hasPermission("rpwi.perms.tempView") && !isHasBypass;
 
         if (isNotCanChangePermView || isNotCanChangeTempView || (!isSelf && !isHasBypass)) {
-            sender.sendMessage(getMsg("no_permission_alert", plugin));
+            sender.sendMessage(getMsg("no_permission_alert", plugin.getTextConfig()));
             return true;
         }
 
@@ -76,10 +76,10 @@ public class ViewCommand implements CommandExecutor {
                 permText.append(args[i]).append(' ');
             }
 
-            String senderMsg = getMsg("lookat." + viewType + "_add", plugin);
+            String senderMsg = getMsg("lookat." + viewType + "_add", plugin.getTextConfig());
             sender.sendMessage(senderMsg);
 
-            if (!isSelf) target.sendMessage(getMsg("lookat.view_change_alert", plugin));
+            if (!isSelf) target.sendMessage(getMsg("lookat.view_change_alert", plugin.getTextConfig()));
 
             lookAtCfg.set(String.join(".", "players", target.getName(), viewType), permText.toString());
             try {
@@ -94,10 +94,10 @@ public class ViewCommand implements CommandExecutor {
         if (action.equals("remove")) {
             if (args.length != 3) return false;
 
-            String senderMsg = getMsg("lookat." + viewType + "_remove", plugin);
+            String senderMsg = getMsg("lookat." + viewType + "_remove", plugin.getTextConfig());
             sender.sendMessage(senderMsg);
 
-            if (!isSelf) target.sendMessage(getMsg("lookat.view_change_alert", plugin));
+            if (!isSelf) target.sendMessage(getMsg("lookat.view_change_alert", plugin.getTextConfig()));
 
             lookAtCfg.set(String.join(".", "players", target.getName(), viewType), null);
         }

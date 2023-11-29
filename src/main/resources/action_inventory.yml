@@ -16,13 +16,14 @@ action_inv:
   command_enable: false
   title: "Уникальные действия"
   open_sound: true
+  size: 54 # количество слотов инвентаря действий. СТРОГО: 9, 27 или 54. Номера слотов считаются от 0. Справа налево, сверху вниз.
   item_usage:
     - " "
     - "&7Чтобы открыть меню выбора возможных"
     - "&7действий, присядьте и используйте"
     - "&7этот предмет."
   actions:
-    1:
+    20: # Это норме слота. Должен быть меньше размера инвентаря, должен быть целым числом. Если будет не число, тогда плагин автоматически подставит сюда случайное значение между 0 и максимальным размером инвентаря.
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eОсмотреть"
@@ -38,7 +39,7 @@ action_inv:
         - " "
         - "&6&lБудем посмотреть..."
       uniqueId: "&8#lookat"
-    2:
+    30:
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eЛечь"
@@ -49,7 +50,7 @@ action_inv:
         - " "
         - "&6&lМожно сойти за труп"
       uniqueId: "&8#lay"
-    3:
+    31:
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eСесть"
@@ -60,7 +61,7 @@ action_inv:
         - " "
         - "&6&l..раздвинув ноги"
       uniqueId: "&8#sit"
-    4:
+    32:
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eПолзти"
@@ -71,7 +72,7 @@ action_inv:
         - " "
         - "&6&lБудет не видно в кустах"
       uniqueId: "&8#crawl"
-    5:
+    21:
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eПоложить"
@@ -85,7 +86,7 @@ action_inv:
         - " "
         - "&6&lКак будто в невидимой рамке..."
       uniqueId: "&8#put"
-    6:
+    22:
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eОбыскать"
@@ -97,7 +98,7 @@ action_inv:
         - " "
         - "&6&lСмотреть можно, а трогать нужно"
       uniqueId: "&8#rummage"
-    7:
+    23:
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eТолкнуть"
@@ -110,7 +111,7 @@ action_inv:
         - " "
         - "&6&lКак ты меня назвал?"
       uniqueId: "&8#push"
-    8:
+    24:
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eУронить"
@@ -123,7 +124,7 @@ action_inv:
         - " "
         - "&6&l\"- Эй там, внизу! Ложиииись!\""
       uniqueId: "&8#dropblock"
-    10:
+    40:
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eЗакрыть"

@@ -7,12 +7,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.RPWorldInteractions;
-import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.s1queence.plugin.utils.BarrierClickListener.empty;
 import static org.s1queence.plugin.utils.TextUtils.createItemFromConfig;
@@ -22,23 +18,27 @@ public class RPActionPanel {
     private final String title;
     private final Inventory inv;
     private final RPWorldInteractions plugin;
-    private final List<ItemStack> actionsLi = new ArrayList<>();
+    private final Map<String, Object> actions;
+    private final int size;
+    private final List<ItemStack> actionItemsList = new ArrayList<>();
 
-    public RPActionPanel(@NotNull String title, @NotNull Map<String, Object> actions, @NotNull RPWorldInteractions plugin) {
+    public RPActionPanel(@NotNull String title, @NotNull Map<String, Object> actions, int size, @NotNull RPWorldInteractions plugin) {
         this.title = title;
         this.plugin = plugin;
-        inv = create(actions);
+        this.size = size;
+        this.actions = actions;
+        inv = create();
     }
 
-    public List<ItemStack> getActionsList() {
-        return actionsLi;
+    public List<ItemStack> getActionItemsList() {
+        return actionItemsList;
     }
 
     public Inventory getInventory() {
         return inv;
     }
 
-    private final static String[] enabledActions = new String[]{
+    private final static String[] enabledActions = new String[] {
             ChatColor.DARK_GRAY + "#lookat",
             ChatColor.DARK_GRAY + "#lay",
             ChatColor.DARK_GRAY + "#sit",
@@ -54,35 +54,31 @@ public class RPActionPanel {
         return Arrays.asList(enabledActions).contains(s1);
     }
 
-    private Inventory create(Map<String, Object> actions) {
-        Inventory actionInv = Bukkit.createInventory(null, 27, title);
+    private Inventory create() {
+        Inventory actionInv = Bukkit.createInventory(null, size, title);
 
         for (String key : actions.keySet()) {
             if (key.contains(".")) continue;
             Map<String, Object> itemData = ((Section)actions.get(key)).getStringRouteMappedValues(true);
 
-            ItemStack is = createItemFromConfig(itemData, true);
+            ItemStack actionItem = createItemFromConfig(itemData, true);
 
-            if (is == null) plugin.log(getMsg("alert_item_null", plugin));
+            if (actionItem == null) plugin.log(getMsg("alert_item_null", plugin.getTextConfig()));
 
-            actionsLi.add(is);
-        }
+            int slot;
 
-        ItemStack closeItem = null;
-        
-        for (ItemStack is : actionsLi) {
-            if (ActionPanelUtil.getActionUUID(is) != null && ActionPanelUtil.getActionUUID(is).contains("#close")) {
-                closeItem = is;
-                continue;
+            try {
+                slot = Integer.parseInt(key);
+            } catch (Exception exception) {
+                slot = (int) (Math.random() * size);
             }
-            actionInv.setItem(actionsLi.indexOf(is) + 9, is);
+            if (slot < 0 || slot > size - 1) slot = (int) (Math.random() * size);
+            actionInv.setItem(slot, actionItem);
+            actionItemsList.add(actionItem);
         }
 
-        actionInv.setItem(22, closeItem);
-
-        for (int i = 0; i < 27; i++) {
-            if (actionInv.getItem(i) != null) continue;
-            actionInv.setItem(i, empty(plugin));
+        for (int i = 0; i < size; i++) {
+            if (actionInv.getItem(i) == null) actionInv.setItem(i, empty(plugin));
         }
 
         return actionInv;

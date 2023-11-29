@@ -72,7 +72,7 @@ public class LookAtListener implements Listener {
 
         String inMarketBlocks = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "view"));
         String inDefaultBlocks = lookAtConfig.getString(String.join(".", "default_blocks", targetBlock.getType().toString()));
-        String nullText = getMsg("lookat.no_block_view", plugin);
+        String nullText = getMsg("lookat.no_block_view", plugin.getTextConfig());
         String output = ofNullable(ofNullable(inMarketBlocks).orElse(inDefaultBlocks)).orElse(nullText);
         String material = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "material"));
 
@@ -109,7 +109,7 @@ public class LookAtListener implements Listener {
         String strLocation = getStringLocation(e.getBlock().getLocation());
         StringBuilder blockView = new StringBuilder();
         List<String> lore = im.getLore();
-        for (int i = 3; i < lore.size(); i++) {
+        for (int i = 0; i < lore.size(); i++) {
             String current = lore.get(i);
             if (i == lore.size() - 1) {
                 blockView.append(current);
@@ -117,11 +117,12 @@ public class LookAtListener implements Listener {
             }
             blockView.append(current).append(' ');
         }
+        if (blockView.toString().isEmpty()) return;
         YamlDocument lookAtCfg = plugin.getLookAtConfig();
         lookAtCfg.set(String.join(".", "market_blocks", strLocation, "view"), blockView.toString());
         lookAtCfg.set(String.join(".", "market_blocks", strLocation, "material"), e.getBlock().getType().toString());
         lookAtCfg.save();
-        sendActionBarMsg(player, getMsg("lookat.block_view_add", plugin));
+        sendActionBarMsg(player, getMsg("lookat.block_view_add", plugin.getTextConfig()));
     }
 
     @EventHandler
@@ -136,7 +137,7 @@ public class LookAtListener implements Listener {
         YamlDocument lookAtCfg = plugin.getLookAtConfig();
         lookAtCfg.set(String.join(".", "market_blocks", strLocation), null);
         lookAtCfg.save();
-        sendActionBarMsg(player, getMsg("lookat.block_view_remove", plugin));
+        sendActionBarMsg(player, getMsg("lookat.block_view_remove", plugin.getTextConfig()));
     }
 }
 
