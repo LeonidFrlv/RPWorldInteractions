@@ -17,6 +17,7 @@ alert_item_null: "%plugin% &4При создании инвентаря прои
 unknown_rpwi_command_action_alert: "%plugin% &4Неизвестное действие"
 no_permission_alert: "&4Нет прав!"
 player_not_found: "&4Игрок не найден!"
+incorrect_inv_size: "%plugin% &4Размер интерфейса предметов может быть равен только 54, 27 или 9! Установлен стандартный размер - 54."
 
 #actions_messages
 # target - игрок на котором используют предмет; player - игрок, который использует предмет.
@@ -104,3 +105,6 @@ lookat:
   view_change_alert: "&cВаше внешнее описание было изменено!" #показывается игроку, если кто-то поменял ему описание (не он сам!)
   block_view_add: "&6Описание добавлено!"
   block_view_remove: "&6Описание убрано!"
+  entity_view_item_frame_text: "&6Лежащий предмет: "
+  entity_view_item_frame_text_item_name: "&3Его название: "
+  entity_view_item_frame_text_item_lore: "&3Его описание:"

@@ -10,6 +10,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -27,7 +28,7 @@ import static org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.isActionItem;
 import static org.s1queence.plugin.utils.TextUtils.getMsg;
-import static org.s1queence.plugin.utils.TextUtils.getRowsListFromString;
+import static org.s1queence.plugin.utils.TextUtils.getRowsList;
 
 public class LookAtListener implements Listener {
     private final RPWorldInteractions plugin;
@@ -67,8 +68,14 @@ public class LookAtListener implements Listener {
         int range = lookAtConfig.getInt("range");
         int maxRowLength = lookAtConfig.getInt("scoreboard.max_row_length");
         Block targetBlock = player.getTargetBlock(null, range);
+        if (targetBlock.getType().equals(Material.AIR)) {
+            player.setScoreboard(sb);
+            return;
+        }
+
         Location location = targetBlock.getLocation();
         String strLocation = getStringLocation(location);
+
 
         String inMarketBlocks = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "view"));
         String inDefaultBlocks = lookAtConfig.getString(String.join(".", "default_blocks", targetBlock.getType().toString()));
@@ -83,11 +90,11 @@ public class LookAtListener implements Listener {
             return;
         }
 
-        List<String> rows = getRowsListFromString(output, maxRowLength);
+        List<String> rows = getRowsList(output, maxRowLength);
         Collections.reverse(rows);
         for (int i = 0; i < rows.size(); i++) {
             String current = rows.get(i);
-            if (!targetBlock.getType().equals(Material.AIR)) o.getScore(ChatColor.RED + "" + i + " " + ChatColor.RESET + current).setScore(i);
+            o.getScore(ChatColor.RED + "" + i + " " + ChatColor.RESET + current).setScore(i);
         }
 
         player.setScoreboard(sb);
@@ -139,6 +146,17 @@ public class LookAtListener implements Listener {
         lookAtCfg.save();
         sendActionBarMsg(player, getMsg("lookat.block_view_remove", plugin.getTextConfig()));
     }
+
+    @EventHandler
+    private void onVehicleEnter(VehicleEnterEvent e) {
+        if (!(e.getEntered() instanceof Player)) return;
+        Player player = (Player) e.getEntered();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        String actionUUID = getActionUUID(item);
+        if (!isActionItem(item, plugin) || actionUUID != null && !actionUUID.contains("#lookat")) return;
+        e.setCancelled(true);
+    }
+
 }
 
 

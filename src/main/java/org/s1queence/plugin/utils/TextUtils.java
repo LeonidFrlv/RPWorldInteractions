@@ -93,23 +93,83 @@ public class TextUtils {
         receiver.sendMessage(getMsg("lookat.name_text", plugin.getTextConfig()) + ChatColor.RESET + holderName);
         receiver.sendMessage(getMsg("lookat.perm_view_text", plugin.getTextConfig()) + ChatColor.RESET + permView);
         receiver.sendMessage(getMsg("lookat.temp_view_text", plugin.getTextConfig()) + ChatColor.RESET + tempView);
-        if (plugin.isLookAtSound()) receiver.playSound(receiver.getLocation(), "rpwi.lookat", 0.7f, 1.0f);
+        if (plugin.isLookAtSound()) receiver.playSound(receiver.getLocation(), "rpwi.lookat", 0.9f, 1.0f);
     }
 
-    public static List<String> getRowsListFromString(String toParse, int maxRowLength) {
+    public static void sendEntityViewToPlayer(Player receiver, String eType, RPWorldInteractions plugin) {
+        String eView = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "default_entities", eType))).orElse(getMsg("lookat.no_entity_view", plugin.getTextConfig()));
+        receiver.sendMessage(getMsg("lookat.entity_view_text", plugin.getTextConfig()) + ChatColor.RESET + eView);
+        if (plugin.isLookAtSound()) receiver.playSound(receiver.getLocation(), "rpwi.lookat", 0.9f, 1.0f);
+    }
+
+    public static List<String> getClearedFormatList(List<String> toParse) {
+        toParse.replaceAll(row -> ("§r§f" + row.replace("&", "").replace("§", "")));
+        return toParse;
+    }
+
+    private static String removeFirstSpace(String str) {
+        return str.indexOf(" ") == 0 ? str.replaceFirst(" ", "") : str;
+    }
+
+    public static List<String> getRowsList(String toParse, int maxRowLength) {
+        List<String> stringedCharacters = new ArrayList<>();
+        StringBuilder character = new StringBuilder();
+
+        for (int i = 0; i < toParse.length(); i++) {
+            Character c1 = toParse.charAt(i);
+            Character next = i != toParse.length() - 1 ? toParse.charAt(i + 1) : null;
+
+            if (next != null && c1.equals(' ') || !Character.isLetterOrDigit(c1) && !c1.equals('\'')) {
+                if (character.length() != 0) stringedCharacters.add(character.toString());
+                character = new StringBuilder();
+                stringedCharacters.add(c1.toString());
+                continue;
+            }
+
+            character.append(c1);
+
+            if (i == toParse.length() - 1) stringedCharacters.add(character.toString());
+        }
+
+        character = new StringBuilder();
         List<String> buffer = new ArrayList<>();
 
-        if (maxRowLength <= 5) maxRowLength = 14;
-        StringBuilder row = new StringBuilder();
-        for (int i = 0; i < toParse.length(); i++) {
-            char current = toParse.charAt(i);
-            if (i % maxRowLength == 0 && i != 0) {
-                buffer.add(row.toString());
-                row = new StringBuilder();
+        if (maxRowLength < 5) maxRowLength = 13;
+
+        for (int i = 0; i < stringedCharacters.size(); i++) {
+            String current = stringedCharacters.get(i);
+            String next = i != stringedCharacters.size() - 1 ? stringedCharacters.get(i + 1) : null;
+            if (current.length() > maxRowLength) {
+                for (int k = 0; k < current.length(); k++) {
+                    Character c1 = current.charAt(k);
+                    if (character.length() == maxRowLength) {
+                        buffer.add(removeFirstSpace(character.toString()));
+                        character = new StringBuilder();
+                    }
+
+                    character.append(c1);
+                    if (k == character.length() - 1) buffer.add(removeFirstSpace(character.toString()));
+                }
+                continue;
             }
-            row.append(current);
-            if (i == toParse.length() - 1) buffer.add(row.toString());
+
+            if (character.length() + current.length() > maxRowLength) {
+                buffer.add(removeFirstSpace(character.toString()));
+
+                character = new StringBuilder();
+            }
+
+            if (next != null && next.length() == 1 && !Character.isLetterOrDigit(next.toCharArray()[0])) {
+                character.append(current).append(next);
+                i++;
+                if (i == stringedCharacters.size() - 1) buffer.add(removeFirstSpace(character.toString()));
+                continue;
+            }
+
+            character.append(current);
+            if (i == stringedCharacters.size() - 1) buffer.add(removeFirstSpace(character.toString()));
         }
+
         return buffer;
     }
 }

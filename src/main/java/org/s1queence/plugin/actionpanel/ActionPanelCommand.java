@@ -20,7 +20,9 @@ public class ActionPanelCommand implements CommandExecutor {
             sender.sendMessage(getMsg("is_action_panel_command_disabled", plugin.getTextConfig()));
             return true;
         }
-        ((Player)sender).openInventory(plugin.getRPActionPanel().getInventory());
+
+        RPActionPanel rpAP = new RPActionPanel((Player)sender, plugin);
+        ((Player)sender).openInventory(rpAP.getInventory());
         return true;
     }
 }

@@ -13,7 +13,6 @@ import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 import java.io.File;
 import java.util.Arrays;
 
-import static java.util.Optional.ofNullable;
 import static org.s1queence.plugin.utils.TextUtils.getMsg;
 
 
@@ -58,9 +57,7 @@ public class RPWICommand implements CommandExecutor {
             YamlDocument actionInventoryConfig = plugin.getActionInventoryConfig();
             YamlDocument optionsConfig = plugin.getOptionsConfig();
 
-            String title = actionInventoryConfig.getString("action_inv.title");
             plugin.setItemUsage(actionInventoryConfig.getStringList("action_inv.item_usage"));
-            plugin.setRPActionPanel(new RPActionPanel(ofNullable(title).orElse("Actions"), actionInventoryConfig.getSection("action_inv.actions").getStringRouteMappedValues(true), actionInventoryConfig.getInt("action_inv.size"), plugin));
             plugin.setIsPanelCommandEnable(actionInventoryConfig.getBoolean("action_inv.command_enable"));
             plugin.setIsOpenSound(actionInventoryConfig.getBoolean("action_inv.open_sound"));
 
@@ -72,6 +69,11 @@ public class RPWICommand implements CommandExecutor {
 
             plugin.getItemActionCoolDown().clear();
             plugin.getPlayersInAction().clear();
+            plugin.getPlayersAndPanels().clear();
+
+            for (Player p : plugin.getServer().getOnlinePlayers()) {
+                plugin.getPlayersAndPanels().put(p.getUniqueId().toString(), new RPActionPanel(p, plugin));
+            }
 
             String reloadMsg = getMsg("onReload_msg", plugin.getTextConfig());
             if (sender instanceof Player) sender.sendMessage(reloadMsg);

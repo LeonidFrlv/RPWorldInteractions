@@ -1,5 +1,6 @@
 package org.s1queence.plugin.actionpanel.listeners;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.geco.gsit.api.GSitAPI;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -20,13 +21,14 @@ import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.s1queence.plugin.RPWorldInteractions;
+import org.s1queence.plugin.actionpanel.RPActionPanel;
 import org.s1queence.plugin.actionpanel.listeners.actions.coop.Rummage;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 
 import java.util.List;
 
-import static java.util.Optional.ofNullable;
 import static org.s1queence.api.S1Booleans.isAllowableInteraction;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.plugin.utils.TextUtils.*;
@@ -37,14 +39,17 @@ public class ActionUseListener implements Listener {
     public ActionUseListener(RPWorldInteractions plugin) {this.plugin = plugin;}
 
     private void moveActionToInventory(Player player, ItemStack is) {
-        ActionPanelUtil.insertLoreBeforeEnd(is, plugin.getItemUsage());
+        ActionPanelUtil.insertLoreBeforeUUID(is, plugin.getItemUsage());
         player.getInventory().setItem(8, is);
     }
 
     @EventHandler
     private void onInventoryClick(InventoryClickEvent e) {
         if (e.getClickedInventory() == null) return;
-        if (!e.getClickedInventory().equals(plugin.getRPActionPanel().getInventory())) return;
+        if (!(e.getWhoClicked() instanceof Player)) return;
+        Player player = (Player) e.getWhoClicked();
+        RPActionPanel rpAP = plugin.getPlayersAndPanels().get(player.getUniqueId().toString());
+        if (!e.getClickedInventory().equals(rpAP.getInventory())) return;
         if (!e.getAction().equals(InventoryAction.PICKUP_ALL)) {
             e.setCancelled(true);
             return;
@@ -57,27 +62,30 @@ public class ActionUseListener implements Listener {
             return;
         }
 
-        Player player = (Player) e.getWhoClicked();
         Block block = player.getWorld().getBlockAt(player.getLocation().getBlockX(), player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ());
 
         if (itemUUID.contains("#sit")) {
             GSitAPI.createSeat(block, player);
-            if (plugin.isSitSound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.7f, 1.0f);
+            if (plugin.isSitSound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.9f, 1.0f);
         }
 
         if (itemUUID.contains("#lay")) {
             GSitAPI.createPose(block, player, Pose.SLEEPING);
-            if (plugin.isLaySound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.7f, 1.0f);
+            if (plugin.isLaySound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.9f, 1.0f);
         }
 
         if (itemUUID.contains("#crawl")) {
             GSitAPI.startCrawl(player);
-            if (plugin.isCrawlSound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.7f, 1.0f);
+            if (plugin.isCrawlSound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.9f, 1.0f);
         }
 
-        if (!itemUUID.contains("#crawl") && !itemUUID.contains("#lay") && !itemUUID.contains("#sit")) {
+        if (itemUUID.contains("#perm") || itemUUID.contains("#temp")) {
+            sendPlayerViewToPlayer(player, player.getName(), plugin);
+        }
+
+        if (!itemUUID.contains("#crawl") && !itemUUID.contains("#lay") && !itemUUID.contains("#sit") && !itemUUID.contains("#perm") && !itemUUID.contains("#temp")) {
             if (!itemUUID.contains("#close")) moveActionToInventory(player, clicked.clone());
-            if (plugin.isSelectActionItemSound()) player.playSound(player.getLocation(), "rpwi.select_action-item", 0.65f, 1.0f);
+            if (plugin.isSelectActionItemSound()) player.playSound(player.getLocation(), "rpwi.select_action-item", 0.9f, 1.0f);
         }
 
         player.closeInventory();
@@ -187,7 +195,10 @@ public class ActionUseListener implements Listener {
         String itemUUID = ActionPanelUtil.getActionUUID(item);
         if (itemUUID == null || !ActionPanelUtil.isActionItem(item, plugin)) return;
 
-        if (e.getRightClicked() instanceof Player) {
+        Entity entity = e.getRightClicked();
+        String eType = entity.getType().toString();
+
+        if (entity instanceof Player) {
             Player target = (Player) e.getRightClicked();
             if (itemUUID.contains("#rummage")) new Rummage(player, target, plugin);
             if (itemUUID.contains("#lookat")) sendPlayerViewToPlayer(player, target.getName(), plugin);
@@ -195,10 +206,36 @@ public class ActionUseListener implements Listener {
         }
 
         if (itemUUID.contains("#lookat")) {
-            String eType = e.getRightClicked().getType().toString();
-            String eView = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "default_entities", eType))).orElse(getMsg("lookat.no_entity_view", plugin.getTextConfig()));
-            player.sendMessage(getMsg("lookat.entity_view_text", plugin.getTextConfig()) + ChatColor.RESET + eView);
-            if (plugin.isLookAtSound()) player.playSound(player.getLocation(), "rpwi.lookat", 0.7f, 1.0f);
+            if (entity instanceof ItemFrame) {
+                ItemFrame frame = (ItemFrame) e.getRightClicked();
+                ItemStack frameItem = frame.getItem();
+
+                if (frameItem.getType().equals(Material.AIR) || !frameItem.hasItemMeta() || frameItem.getItemMeta() == null) {
+                    sendEntityViewToPlayer(player, eType, plugin);
+                    return;
+                }
+
+                player.sendMessage(getMsg("lookat.entity_view_item_frame_text", plugin.getTextConfig()));
+
+                ItemMeta itemMeta = frameItem.getItemMeta();
+                if (itemMeta.hasDisplayName()) {
+                    String name = itemMeta.getDisplayName();
+                    player.sendMessage(getMsg("lookat.entity_view_item_frame_text_item_name", plugin.getTextConfig()) + ChatColor.RESET + name);
+                }
+
+                if (itemMeta.hasLore() && itemMeta.getLore() != null && !itemMeta.getLore().isEmpty()) {
+                    List<String> lore = itemMeta.getLore();
+                    player.sendMessage(getMsg("lookat.entity_view_item_frame_text_item_lore", plugin.getTextConfig()));
+                    for (String current : lore) {
+                        player.sendMessage(" " + current);
+                    }
+                }
+
+                if (plugin.isLookAtSound()) player.playSound(player.getLocation(), "rpwi.lookat", 0.9f, 1.0f);
+
+                return;
+            }
+            sendEntityViewToPlayer(player, eType, plugin);
         }
     }
 
@@ -215,8 +252,8 @@ public class ActionUseListener implements Listener {
         if (!ActionPanelUtil.isActionItem(itemInMainHand, plugin)) return;
         if (player.isSneaking()) {
             if (clicked != null && clicked.getType().isInteractable()) return;
-            if (plugin.isOpenSound()) player.playSound(player.getLocation(), "rpwi.inv_open", 1.0f, 1.0f);
-            player.openInventory(plugin.getRPActionPanel().getInventory());
+            if (plugin.isOpenSound()) player.playSound(player.getLocation(), "rpwi.inv_open", 0.9f, 1.0f);
+            player.openInventory(plugin.getPlayersAndPanels().get(player.getUniqueId().toString()).getInventory());
             return;
         }
 

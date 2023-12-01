@@ -22,17 +22,20 @@ public abstract class ActionPanelUtil {
     }
 
     public static boolean isActionItem(ItemStack item, RPWorldInteractions plugin) {
-        if (getActionUUID(item) == null) return false;
-        for (ItemStack action : plugin.getRPActionPanel().getActionItemsList()) {
+        String uuid = getActionUUID(item);
+        if (uuid == null) return false;
+        if (uuid.contains("#perm") || uuid.contains("#temp")) return true;
+        RPActionPanel rpAP = new RPActionPanel(null, plugin);
+        for (ItemStack action : rpAP.getActionItemsList()) {
             ItemStack cloned = action.clone();
-            insertLoreBeforeEnd(cloned, plugin.getItemUsage());
+            insertLoreBeforeUUID(cloned, plugin.getItemUsage());
             if (cloned.equals(item)) return true;
         }
 
         return false;
     }
 
-    public static void insertLoreBeforeEnd(ItemStack is, List<String> loreToInsert) {
+    public static void insertLoreBeforeUUID(ItemStack is, List<String> loreToInsert) {
         ItemMeta im = is.getItemMeta();
         List<String> lore = is.getItemMeta().getLore();
         String removed = lore.get(lore.size() - 1);
@@ -46,8 +49,9 @@ public abstract class ActionPanelUtil {
     }
 
     public static void addDefaultActionItem(Player player, RPWorldInteractions plugin) {
-        ItemStack cloned = plugin.getRPActionPanel().getActionItemsList().get(0).clone();
-        ActionPanelUtil.insertLoreBeforeEnd(cloned, plugin.getItemUsage());
+        RPActionPanel rpAP = new RPActionPanel(null, plugin);
+        ItemStack cloned = rpAP.getActionItemsList().get(0).clone();
+        ActionPanelUtil.insertLoreBeforeUUID(cloned, plugin.getItemUsage());
         player.getInventory().setItem(8, cloned);
     }
 }

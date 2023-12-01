@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.s1queence.plugin.actionpanel.RPActionPanel;
 import org.s1queence.plugin.actionpanel.listeners.ActionUseListener;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.LookAtListener;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewCommand;
@@ -15,7 +16,6 @@ import org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPa
 import org.s1queence.plugin.commands.RPWICommand;
 import org.s1queence.plugin.utils.BarrierClickListener;
 import org.s1queence.plugin.actionpanel.ActionPanelCommand;
-import org.s1queence.plugin.actionpanel.RPActionPanel;
 import org.s1queence.plugin.actionpanel.listeners.PlayerSpawnListener;
 import org.s1queence.plugin.actionpanel.listeners.PreventDefaultForActionItems;
 
@@ -25,12 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Optional.ofNullable;
 import static org.s1queence.plugin.utils.TextUtils.getMsg;
 
 public class RPWorldInteractions extends JavaPlugin implements Listener {
-    private RPActionPanel rp_action_panel;
     private final Map<Player, Player> playersInRPAction = new HashMap<>();
+    private final Map<String, RPActionPanel> playersAndPanels = new HashMap<>();
     public static final Float PLAYER_RP_ACTION_SPEED = 0.040010135F;
     public static final String PLUGIN_TITLE = "[" + ChatColor.GOLD + "RPWorldInteractions" + ChatColor.WHITE + "]";
     private final Map<Player, Player> itemActionCoolDown = new HashMap<>();
@@ -60,8 +59,6 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
 
         log(getMsg("onEnable_msg", textConfig));
 
-        String title = actionInventoryConfig.getString("action_inv.title");
-        rp_action_panel = new RPActionPanel(ofNullable(title).orElse("Actions"), actionInventoryConfig.getSection("action_inv.actions").getStringRouteMappedValues(true), actionInventoryConfig.getInt("action_inv.size"), this);
         item_usage = actionInventoryConfig.getStringList("action_inv.item_usage");
 
         command_enable = actionInventoryConfig.getBoolean("action_inv.command_enable");
@@ -86,7 +83,10 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
 
     @EventHandler
     private void onJoin(PlayerJoinEvent e) {
-        e.getPlayer().setResourcePack(getOptionsConfig().getString("resource_pack"));
+        Player player = e.getPlayer();
+        String uuid = player.getUniqueId().toString();
+        playersAndPanels.put(uuid, new RPActionPanel(player, this));
+        player.setResourcePack(getOptionsConfig().getString("resource_pack"));
     }
 
     public void onDisable() {
@@ -99,11 +99,12 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
 
     public List<String> getItemUsage() {return item_usage;}
     public void setItemUsage(List<String> newState) {item_usage = newState;}
-    public RPActionPanel getRPActionPanel() {return rp_action_panel;}
-    public void setRPActionPanel(RPActionPanel newState) {rp_action_panel = newState;}
 
     public Map<Player, Player> getPlayersInAction() {
         return playersInRPAction;
+    }
+    public Map<String, RPActionPanel> getPlayersAndPanels() {
+        return playersAndPanels;
     }
     public boolean isPlayerInAction(Player player) {
         return getPlayersInAction().containsKey(player) || getPlayersInAction().containsValue(player);

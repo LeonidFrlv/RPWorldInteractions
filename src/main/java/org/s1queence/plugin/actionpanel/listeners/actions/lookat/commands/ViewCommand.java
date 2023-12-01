@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.RPWorldInteractions;
+import org.s1queence.plugin.actionpanel.RPActionPanel;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -81,12 +82,15 @@ public class ViewCommand implements CommandExecutor {
 
             if (!isSelf) target.sendMessage(getMsg("lookat.view_change_alert", plugin.getTextConfig()));
 
+
             lookAtCfg.set(String.join(".", "players", target.getName(), viewType), permText.toString());
             try {
                 lookAtCfg.save();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
+            plugin.getPlayersAndPanels().put(target.getUniqueId().toString(), new RPActionPanel(target, plugin));
 
             return true;
         }
@@ -107,6 +111,8 @@ public class ViewCommand implements CommandExecutor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        plugin.getPlayersAndPanels().put(target.getUniqueId().toString(), new RPActionPanel(target, plugin));
 
         return true;
     }
