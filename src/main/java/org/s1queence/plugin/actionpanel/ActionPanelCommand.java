@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.RPWorldInteractions;
 
-import static org.s1queence.plugin.utils.TextUtils.getMsg;
+import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
 
 public class ActionPanelCommand implements CommandExecutor {
     private final RPWorldInteractions plugin;
@@ -17,7 +17,7 @@ public class ActionPanelCommand implements CommandExecutor {
         if (args.length != 0) return false;
         if (!(sender instanceof Player)) return true;
         if (!plugin.isPanelCommandEnable()) {
-            sender.sendMessage(getMsg("is_action_panel_command_disabled", plugin.getTextConfig()));
+            sender.sendMessage(getTextFromCfg("is_action_panel_command_disabled", plugin.getTextConfig()));
             return true;
         }
 

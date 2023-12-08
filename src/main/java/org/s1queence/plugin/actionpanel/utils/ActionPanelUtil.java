@@ -8,15 +8,18 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
 
-
 import java.util.List;
 
 public abstract class ActionPanelUtil {
     public static String getActionUUID(ItemStack item) {
         if (!item.getType().equals(Material.ENCHANTED_BOOK)) return null;
         if (!item.hasItemMeta()) return null;
-        if (!item.getItemMeta().hasLore()) return null;
-        String llr = item.getItemMeta().getLore().get(item.getItemMeta().getLore().size() - 1);
+        ItemMeta itemMeta = item.getItemMeta();
+        if (itemMeta == null) return null;
+        if (!itemMeta.hasLore()) return null;
+        List<String> lore = itemMeta.getLore();
+        if (lore == null || lore.isEmpty()) return null;
+        String llr = lore.get(lore.size() - 1);
         if (!RPActionPanel.isEnabledAction(llr)) return null;
         return llr;
     }
@@ -24,7 +27,7 @@ public abstract class ActionPanelUtil {
     public static boolean isActionItem(ItemStack item, RPWorldInteractions plugin) {
         String uuid = getActionUUID(item);
         if (uuid == null) return false;
-        if (uuid.contains("#perm") || uuid.contains("#temp")) return true;
+        if (uuid.contains("#view")) return true;
         RPActionPanel rpAP = new RPActionPanel(null, plugin);
         for (ItemStack action : rpAP.getActionItemsList()) {
             ItemStack cloned = action.clone();
@@ -37,7 +40,9 @@ public abstract class ActionPanelUtil {
 
     public static void insertLoreBeforeUUID(ItemStack is, List<String> loreToInsert) {
         ItemMeta im = is.getItemMeta();
+        if (im == null) return;
         List<String> lore = is.getItemMeta().getLore();
+        if (lore == null) return;
         String removed = lore.get(lore.size() - 1);
         lore.remove(lore.size() - 1);
         for (String row : loreToInsert) {

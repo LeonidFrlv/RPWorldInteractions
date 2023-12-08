@@ -9,7 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
-import org.s1queence.plugin.actionpanel.listeners.ActionUseListener;
+import org.s1queence.plugin.actionpanel.listeners.actions.ActionUseListener;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.LookAtListener;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewCommand;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPaintToolCommand;
@@ -25,14 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.s1queence.plugin.utils.TextUtils.getMsg;
+import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
 
 public class RPWorldInteractions extends JavaPlugin implements Listener {
-    private final Map<Player, Player> playersInRPAction = new HashMap<>();
     private final Map<String, RPActionPanel> playersAndPanels = new HashMap<>();
-    public static final Float PLAYER_RP_ACTION_SPEED = 0.040010135F;
     public static final String PLUGIN_TITLE = "[" + ChatColor.GOLD + "RPWorldInteractions" + ChatColor.WHITE + "]";
-    private final Map<Player, Player> itemActionCoolDown = new HashMap<>();
     private List<String> item_usage;
     private YamlDocument actionInventoryConfig;
     private YamlDocument textConfig;
@@ -57,7 +54,7 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
             throw new RuntimeException(exception);
         }
 
-        log(getMsg("onEnable_msg", textConfig));
+        log(getTextFromCfg("onEnable_msg", textConfig));
 
         item_usage = actionInventoryConfig.getStringList("action_inv.item_usage");
 
@@ -90,7 +87,7 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
     }
 
     public void onDisable() {
-        log(getMsg("onDisable_msg", textConfig));
+        log(getTextFromCfg("onDisable_msg", textConfig));
     }
 
     public void log(String msgToConsoleLog) {
@@ -100,23 +97,10 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
     public List<String> getItemUsage() {return item_usage;}
     public void setItemUsage(List<String> newState) {item_usage = newState;}
 
-    public Map<Player, Player> getPlayersInAction() {
-        return playersInRPAction;
-    }
     public Map<String, RPActionPanel> getPlayersAndPanels() {
         return playersAndPanels;
     }
-    public boolean isPlayerInAction(Player player) {
-        return getPlayersInAction().containsKey(player) || getPlayersInAction().containsValue(player);
-    }
 
-    public Map<Player, Player> getItemActionCoolDown() {
-        return itemActionCoolDown;
-    }
-
-    public boolean isActionCoolDownExpired(Player p) {
-        return !itemActionCoolDown.containsKey(p) && !itemActionCoolDown.containsValue(p);
-    }
     public boolean isPanelCommandEnable() {
         return command_enable;
     }

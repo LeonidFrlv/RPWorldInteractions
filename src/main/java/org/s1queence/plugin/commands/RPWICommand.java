@@ -13,7 +13,9 @@ import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 import java.io.File;
 import java.util.Arrays;
 
-import static org.s1queence.plugin.utils.TextUtils.getMsg;
+import static org.s1queence.api.countdown.CountDownAction.getDoubleRunnableActionHandlers;
+import static org.s1queence.api.countdown.CountDownAction.getPreprocessActionHandlers;
+import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
 
 
 public class RPWICommand implements CommandExecutor {
@@ -30,7 +32,7 @@ public class RPWICommand implements CommandExecutor {
         String action = args[0];
 
         if (!Arrays.asList(possiblesActions).contains(action.toLowerCase())) {
-            sender.sendMessage(getMsg("unknown_rpwi_command_action_alert", plugin.getTextConfig()));
+            sender.sendMessage(getTextFromCfg("unknown_rpwi_command_action_alert", plugin.getTextConfig()));
             return true;
         }
 
@@ -67,15 +69,15 @@ public class RPWICommand implements CommandExecutor {
             plugin.setIsSelectActionItemSound(optionsConfig.getBoolean("sounds.select_actionItem"));
             plugin.setIsLookAtSound(optionsConfig.getBoolean("sounds.lookat_sound"));
 
-            plugin.getItemActionCoolDown().clear();
-            plugin.getPlayersInAction().clear();
+            getPreprocessActionHandlers().clear();
+            getDoubleRunnableActionHandlers().clear();
             plugin.getPlayersAndPanels().clear();
 
             for (Player p : plugin.getServer().getOnlinePlayers()) {
                 plugin.getPlayersAndPanels().put(p.getUniqueId().toString(), new RPActionPanel(p, plugin));
             }
 
-            String reloadMsg = getMsg("onReload_msg", plugin.getTextConfig());
+            String reloadMsg = getTextFromCfg("onReload_msg", plugin.getTextConfig());
             if (sender instanceof Player) sender.sendMessage(reloadMsg);
             plugin.log(reloadMsg);
 

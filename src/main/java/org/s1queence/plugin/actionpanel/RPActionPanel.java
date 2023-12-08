@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static java.util.Optional.ofNullable;
+import static org.s1queence.api.S1TextUtils.createItemFromMap;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
 import static org.s1queence.plugin.utils.BarrierClickListener.empty;
 import static org.s1queence.plugin.utils.TextUtils.*;
@@ -28,13 +29,12 @@ public class RPActionPanel {
     private final Map<String, Object> actions;
     private int size;
     private final List<ItemStack> actionItemsList = new ArrayList<>();
-
     private final InventoryHolder holder;
 
     public RPActionPanel(@Nullable InventoryHolder holder, @NotNull RPWorldInteractions plugin) {
         YamlDocument cfg = plugin.getActionInventoryConfig();
         this.plugin = plugin;
-        title = ofNullable(cfg.getString("action_inv.title")).orElse("Actions");
+        title = ChatColor.translateAlternateColorCodes('&', cfg.getString("action_inv.title"));
         size = cfg.getInt("action_inv.size");
         if (size != 54 && size != 9 && size != 27) {
             size = 54;
@@ -44,7 +44,7 @@ public class RPActionPanel {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            plugin.getServer().getConsoleSender().sendMessage(getMsg("incorrect_inv_size", plugin.getTextConfig()));
+            plugin.getServer().getConsoleSender().sendMessage(getTextFromCfg("incorrect_inv_size", plugin.getTextConfig()));
         }
 
 
@@ -71,8 +71,7 @@ public class RPActionPanel {
             ChatColor.DARK_GRAY + "#push",
             ChatColor.DARK_GRAY + "#dropblock",
             ChatColor.DARK_GRAY + "#close",
-            ChatColor.DARK_GRAY + "#perm",
-            ChatColor.DARK_GRAY + "#temp"
+            ChatColor.DARK_GRAY + "#view",
     };
 
     public static boolean isEnabledAction(String s1) {
@@ -81,13 +80,12 @@ public class RPActionPanel {
 
     private void insertViewToItemLore(String viewType, ItemStack is) {
         ItemMeta im = is.getItemMeta();
-        String view = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "players", ((Player)holder).getName(), viewType))).orElse(getMsg("lookat.no_" + viewType, plugin.getTextConfig()));
+        String view = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "players", ((Player)holder).getName(), viewType))).orElse(getTextFromCfg("lookat.no_" + viewType, plugin.getTextConfig()));
         List<String> lore = ofNullable(is.getItemMeta().getLore()).orElse(new ArrayList<>());
 
         if (lore.isEmpty()) return;
 
         List<String> rowsList = getClearedFormatList(getRowsList(view, 30));
-
 
         String special = "%" + viewType + "_view%";
         int startIndex = 0;
@@ -115,10 +113,10 @@ public class RPActionPanel {
             if (key.contains(".")) continue;
             Map<String, Object> itemData = ((Section)actions.get(key)).getStringRouteMappedValues(true);
 
-            ItemStack actionItem = createItemFromConfig(itemData, true);
+            ItemStack actionItem = createItemFromMap(itemData);
 
             if (actionItem == null) {
-                plugin.log(getMsg("alert_item_null", plugin.getTextConfig()));
+                plugin.log(getTextFromCfg("alert_item_null", plugin.getTextConfig()));
                 continue;
             }
 
@@ -134,10 +132,11 @@ public class RPActionPanel {
             String uuid = getActionUUID(actionItem);
             String holderName = holder != null ? ((Player)holder).getName() : null;
 
-            if (uuid != null && uuid.contains("#perm") && holderName != null) insertViewToItemLore("perm", actionItem);
+            if (uuid != null && uuid.contains("#view") && holderName != null) {
+                insertViewToItemLore("perm", actionItem);
+                insertViewToItemLore("temp", actionItem);
+            }
 
-            if (uuid != null && uuid.contains("#temp") && holderName != null) insertViewToItemLore("temp", actionItem);
-            
             actionInv.setItem(slot, actionItem);
             actionItemsList.add(actionItem);
         }

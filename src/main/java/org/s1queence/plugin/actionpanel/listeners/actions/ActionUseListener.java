@@ -1,4 +1,4 @@
-package org.s1queence.plugin.actionpanel.listeners;
+package org.s1queence.plugin.actionpanel.listeners.actions;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.geco.gsit.api.GSitAPI;
@@ -12,25 +12,33 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.s1queence.api.countdown.progressbar.ProgressBar;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
-import org.s1queence.plugin.actionpanel.listeners.actions.coop.Rummage;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 
 import java.util.List;
 
+import static org.s1queence.S1queenceLib.getLib;
 import static org.s1queence.api.S1Booleans.isAllowableInteraction;
+import static org.s1queence.api.S1TextUtils.getTextWithInsertedPlayerName;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
+import static org.s1queence.api.countdown.CountDownAction.*;
+import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
+import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.isActionItem;
 import static org.s1queence.plugin.utils.TextUtils.*;
 
 public class ActionUseListener implements Listener {
@@ -48,15 +56,26 @@ public class ActionUseListener implements Listener {
         if (e.getClickedInventory() == null) return;
         if (!(e.getWhoClicked() instanceof Player)) return;
         Player player = (Player) e.getWhoClicked();
+        InventoryAction action = e.getAction();
         RPActionPanel rpAP = plugin.getPlayersAndPanels().get(player.getUniqueId().toString());
+        if (isPlayerInDoubleRunnableAction(player) && !isPlayerMakingSoloCDAction(player) && action.toString().contains("DROP")) {
+            ItemStack item = player.getInventory().getItem(8);
+            if (item != null) {
+                String itemUUID = getActionUUID(item);
+                if (itemUUID != null && itemUUID.contains("#rummage")) {
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+        }
         if (!e.getClickedInventory().equals(rpAP.getInventory())) return;
-        if (!e.getAction().equals(InventoryAction.PICKUP_ALL)) {
+        if (!action.equals(InventoryAction.PICKUP_ALL)) {
             e.setCancelled(true);
             return;
         }
         ItemStack clicked = e.getCurrentItem();
         if (clicked == null) return;
-        String itemUUID = ActionPanelUtil.getActionUUID(clicked);
+        String itemUUID = getActionUUID(clicked);
         if (itemUUID == null) {
             e.setCancelled(true);
             return;
@@ -79,11 +98,11 @@ public class ActionUseListener implements Listener {
             if (plugin.isCrawlSound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.9f, 1.0f);
         }
 
-        if (itemUUID.contains("#perm") || itemUUID.contains("#temp")) {
+        if (itemUUID.contains("#view")) {
             sendPlayerViewToPlayer(player, player.getName(), plugin);
         }
 
-        if (!itemUUID.contains("#crawl") && !itemUUID.contains("#lay") && !itemUUID.contains("#sit") && !itemUUID.contains("#perm") && !itemUUID.contains("#temp")) {
+        if (!itemUUID.contains("#crawl") && !itemUUID.contains("#lay") && !itemUUID.contains("#sit") && !itemUUID.contains("#view")) {
             if (!itemUUID.contains("#close")) moveActionToInventory(player, clicked.clone());
             if (plugin.isSelectActionItemSound()) player.playSound(player.getLocation(), "rpwi.select_action-item", 0.9f, 1.0f);
         }
@@ -91,6 +110,30 @@ public class ActionUseListener implements Listener {
         player.closeInventory();
         e.setCancelled(true);
     }
+
+    @EventHandler
+    private void onPlayerItemConsume(PlayerItemConsumeEvent e) {
+        Player player = e.getPlayer();
+        RPActionPanel rpAP = plugin.getPlayersAndPanels().get(player.getUniqueId().toString());
+        if (rpAP != null && !rpAP.getInventory().getViewers().contains(player)) return;
+        e.setCancelled(true);
+    }
+
+    @EventHandler
+    private void onPlayerDropItem(PlayerDropItemEvent e) {
+        Player player = e.getPlayer();
+        if (!isPlayerInDoubleRunnableAction(player) || isPlayerMakingSoloCDAction(player)) return;
+        e.setCancelled(true);
+    }
+
+    @EventHandler
+    private void onPlayerDropItem(EntityPickupItemEvent e) {
+        if (!(e.getEntity() instanceof Player)) return;
+        Player player = (Player) e.getEntity();
+        if (!isPlayerInDoubleRunnableAction(player) || isPlayerMakingSoloCDAction(player)) return;
+        e.setCancelled(true);
+    }
+
     @EventHandler
     private void onEntityHangingBreak(HangingBreakEvent e) {
         Entity entity = e.getEntity();
@@ -106,7 +149,7 @@ public class ActionUseListener implements Listener {
     private void onPlayerPlaceBlock(BlockPlaceEvent e) {
         Player player = e.getPlayer();
         Block block = e.getBlock();
-        String errorText = isAllowableInteraction(player, block.getLocation());
+        String errorText = isAllowableInteraction(player, block.getLocation(), getLib());
         if (errorText != null && !player.getGameMode().equals(GameMode.CREATIVE)) {
             sendActionBarMsg(player, errorText);
             e.setCancelled(true);
@@ -117,13 +160,13 @@ public class ActionUseListener implements Listener {
         ItemStack item = inv.getItemInMainHand();
         BlockData clonedBlockData = e.getBlock().getBlockData().clone();
         Material blockType = e.getBlock().getType();
-        String itemUUID = ActionPanelUtil.getActionUUID(item);
-        if (!ActionPanelUtil.isActionItem(item, plugin)) return;
+        String itemUUID = getActionUUID(item);
+        if (!isActionItem(item, plugin)) return;
         if (itemUUID.contains("#put")) {
             e.setCancelled(true);
             return;
         }
-        if (!blockType.isOccluding() && !blockType.toString().contains("STAIRS")) return;
+        if (!blockType.isOccluding() && !blockType.toString().contains("STAIRS") && !blockType.toString().contains("LADDER")) return;
         if (item.getType().equals(Material.AIR)) return;
         if (!itemUUID.contains("#dropblock")) return;
         Location blockLocation = e.getBlock().getLocation();
@@ -140,8 +183,8 @@ public class ActionUseListener implements Listener {
         Vehicle vehicle = e.getVehicle();
         ItemStack item = pusher.getInventory().getItemInMainHand();
         if (item.getType().equals(Material.AIR)) return;
-        String itemUUID = ActionPanelUtil.getActionUUID(item);
-        if (!ActionPanelUtil.isActionItem(item, plugin)) return;
+        String itemUUID = getActionUUID(item);
+        if (!isActionItem(item, plugin)) return;
         if (!itemUUID.contains("#push")) return;
         vehicle.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(0.3f));
     }
@@ -164,14 +207,14 @@ public class ActionUseListener implements Listener {
         Entity target = e.getEntity();
         ItemStack item = pusher.getInventory().getItemInMainHand();
         if (item.getType().equals(Material.AIR)) return;
-        String itemUUID = ActionPanelUtil.getActionUUID(item);
-        if (!ActionPanelUtil.isActionItem(item, plugin)) return;
+        String itemUUID = getActionUUID(item);
+        if (!isActionItem(item, plugin)) return;
         if (!itemUUID.contains("#push")) return;
         if (!(target instanceof LivingEntity) || target.getType().equals(EntityType.ARMOR_STAND)) return;
         target.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(1));
         e.setCancelled(true);
         if (!(target instanceof Player)) return;
-        String targetMsg = insertPlayerName(getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.target_action_bar_messages")), pusher.getName());
+        String targetMsg = getTextWithInsertedPlayerName(getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.target_action_bar_messages")), pusher.getName());
         String playerMsg = ChatColor.translateAlternateColorCodes('&', getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.player_action_bar_messages")));
         sendActionBarMsg(pusher, playerMsg);
         sendActionBarMsg((Player) target, targetMsg);
@@ -182,25 +225,62 @@ public class ActionUseListener implements Listener {
         if (!e.getHand().equals(EquipmentSlot.HAND)) return;
         Player player = e.getPlayer();
 
-        String errorText = isAllowableInteraction(player, e.getRightClicked().getLocation());
+        String errorText = isAllowableInteraction(player, e.getRightClicked().getLocation(), getLib());
         if (errorText != null && !player.getGameMode().equals(GameMode.CREATIVE)) {
             sendActionBarMsg(player, errorText);
             e.setCancelled(true);
             return;
         }
 
-        if (plugin.isPlayerInAction(player) || !plugin.isActionCoolDownExpired(player) || plugin.isLaying(player)) return;
+        if (isPlayerInCountDownAction(player) || plugin.isLaying(player)) return;
         ItemStack item = e.getPlayer().getInventory().getItemInMainHand();
         if (item.getType().equals(Material.AIR)) return;
-        String itemUUID = ActionPanelUtil.getActionUUID(item);
-        if (itemUUID == null || !ActionPanelUtil.isActionItem(item, plugin)) return;
+        String itemUUID = getActionUUID(item);
+        if (itemUUID == null || !isActionItem(item, plugin)) return;
 
         Entity entity = e.getRightClicked();
         String eType = entity.getType().toString();
 
         if (entity instanceof Player) {
             Player target = (Player) e.getRightClicked();
-            if (itemUUID.contains("#rummage")) new Rummage(player, target, plugin);
+            if (itemUUID.contains("#rummage")) {
+                YamlDocument cfg = plugin.getTextConfig();
+                YamlDocument optionsCfg = plugin.getOptionsConfig();
+                new Rummage(
+                        player,
+                        target,
+                        optionsCfg.getInt("rummage.seconds"),
+                        true,
+                        new ProgressBar(
+                                0,
+                                1,
+                                optionsCfg.getInt("progress_bar.max_bars"),
+                                optionsCfg.getString("progress_bar.symbol"),
+                                ChatColor.translateAlternateColorCodes('&', optionsCfg.getString("progress_bar.border_left")),
+                                ChatColor.translateAlternateColorCodes('&', optionsCfg.getString("progress_bar.border_right")),
+                                ChatColor.getByChar(optionsCfg.getString("progress_bar.color")),
+                                ChatColor.getByChar(optionsCfg.getString("progress_bar.complete_color")),
+                                ChatColor.getByChar(optionsCfg.getString("progress_bar.percent_color"))
+                                ),
+                        plugin,
+                        plugin,
+                        getTextFromCfg("rummage_action.preprocess.every_tick.action_bar_both", cfg),
+                        getTextFromCfg("rummage_action.preprocess.every_tick.player.title", cfg),
+                        getTextFromCfg("rummage_action.preprocess.every_tick.player.subtitle", cfg),
+                        getTextFromCfg("rummage_action.preprocess.every_tick.target.title", cfg),
+                        getTextFromCfg("rummage_action.preprocess.every_tick.target.subtitle", cfg),
+                        getTextFromCfg("rummage_action.preprocess.complete.action_bar_both", cfg),
+                        getTextFromCfg("rummage_action.preprocess.complete.player.title", cfg),
+                        getTextFromCfg("rummage_action.preprocess.complete.player.subtitle", cfg),
+                        getTextFromCfg("rummage_action.preprocess.complete.target.title", cfg),
+                        getTextFromCfg("rummage_action.preprocess.complete.target.subtitle", cfg),
+                        getTextFromCfg("rummage_action.preprocess.cancel.action_bar_both", cfg),
+                        getTextFromCfg("rummage_action.preprocess.cancel.player.title", cfg),
+                        getTextFromCfg("rummage_action.preprocess.cancel.player.subtitle", cfg),
+                        getTextFromCfg("rummage_action.preprocess.cancel.target.title", cfg),
+                        getTextFromCfg("rummage_action.preprocess.cancel.target.subtitle", cfg)
+                );
+            }
             if (itemUUID.contains("#lookat")) sendPlayerViewToPlayer(player, target.getName(), plugin);
             return;
         }
@@ -215,17 +295,17 @@ public class ActionUseListener implements Listener {
                     return;
                 }
 
-                player.sendMessage(getMsg("lookat.entity_view_item_frame_text", plugin.getTextConfig()));
+                player.sendMessage(getTextFromCfg("lookat.entity_view_item_frame_text", plugin.getTextConfig()));
 
                 ItemMeta itemMeta = frameItem.getItemMeta();
                 if (itemMeta.hasDisplayName()) {
                     String name = itemMeta.getDisplayName();
-                    player.sendMessage(getMsg("lookat.entity_view_item_frame_text_item_name", plugin.getTextConfig()) + ChatColor.RESET + name);
+                    player.sendMessage(getTextFromCfg("lookat.entity_view_item_frame_text_item_name", plugin.getTextConfig()) + ChatColor.RESET + name);
                 }
 
                 if (itemMeta.hasLore() && itemMeta.getLore() != null && !itemMeta.getLore().isEmpty()) {
                     List<String> lore = itemMeta.getLore();
-                    player.sendMessage(getMsg("lookat.entity_view_item_frame_text_item_lore", plugin.getTextConfig()));
+                    player.sendMessage(getTextFromCfg("lookat.entity_view_item_frame_text_item_lore", plugin.getTextConfig()));
                     for (String current : lore) {
                         player.sendMessage(" " + current);
                     }
@@ -249,7 +329,7 @@ public class ActionUseListener implements Listener {
         Player player = e.getPlayer();
         boolean isInCreative = player.getGameMode().equals(GameMode.CREATIVE);
         ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
-        if (!ActionPanelUtil.isActionItem(itemInMainHand, plugin)) return;
+        if (!isActionItem(itemInMainHand, plugin)) return;
         if (player.isSneaking()) {
             if (clicked != null && clicked.getType().isInteractable()) return;
             if (plugin.isOpenSound()) player.playSound(player.getLocation(), "rpwi.inv_open", 0.9f, 1.0f);
@@ -259,14 +339,14 @@ public class ActionUseListener implements Listener {
 
         if (!action.equals(Action.RIGHT_CLICK_BLOCK) || clicked == null) return;
 
-        String errorText = isAllowableInteraction(player, e.getClickedBlock().getLocation());
+        String errorText = isAllowableInteraction(player, e.getClickedBlock().getLocation(), getLib());
         if (errorText != null && !isInCreative) {
             sendActionBarMsg(player, errorText);
             e.setCancelled(true);
             return;
         }
 
-        String itemUUID = ActionPanelUtil.getActionUUID(itemInMainHand);
+        String itemUUID = getActionUUID(itemInMainHand);
         if (itemUUID != null && !itemUUID.contains("#put")) return;
 
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();

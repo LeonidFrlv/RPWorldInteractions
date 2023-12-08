@@ -27,7 +27,7 @@ import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPaintToolCommand.viewPaintTool;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.isActionItem;
-import static org.s1queence.plugin.utils.TextUtils.getMsg;
+import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
 import static org.s1queence.plugin.utils.TextUtils.getRowsList;
 
 public class LookAtListener implements Listener {
@@ -76,10 +76,9 @@ public class LookAtListener implements Listener {
         Location location = targetBlock.getLocation();
         String strLocation = getStringLocation(location);
 
-
         String inMarketBlocks = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "view"));
         String inDefaultBlocks = lookAtConfig.getString(String.join(".", "default_blocks", targetBlock.getType().toString()));
-        String nullText = getMsg("lookat.no_block_view", plugin.getTextConfig());
+        String nullText = getTextFromCfg("lookat.no_block_view", plugin.getTextConfig());
         String output = ofNullable(ofNullable(inMarketBlocks).orElse(inDefaultBlocks)).orElse(nullText);
         String material = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "material"));
 
@@ -129,7 +128,7 @@ public class LookAtListener implements Listener {
         lookAtCfg.set(String.join(".", "market_blocks", strLocation, "view"), blockView.toString());
         lookAtCfg.set(String.join(".", "market_blocks", strLocation, "material"), e.getBlock().getType().toString());
         lookAtCfg.save();
-        sendActionBarMsg(player, getMsg("lookat.block_view_add", plugin.getTextConfig()));
+        sendActionBarMsg(player, getTextFromCfg("lookat.block_view_add", plugin.getTextConfig()));
     }
 
     @EventHandler
@@ -144,7 +143,7 @@ public class LookAtListener implements Listener {
         YamlDocument lookAtCfg = plugin.getLookAtConfig();
         lookAtCfg.set(String.join(".", "market_blocks", strLocation), null);
         lookAtCfg.save();
-        sendActionBarMsg(player, getMsg("lookat.block_view_remove", plugin.getTextConfig()));
+        sendActionBarMsg(player, getTextFromCfg("lookat.block_view_remove", plugin.getTextConfig()));
     }
 
     @EventHandler

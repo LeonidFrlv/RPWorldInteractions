@@ -6,7 +6,7 @@
 
     <groupId>org.s1queence</groupId>
     <artifactId>RPWorldInteractions</artifactId>
-    <version>0.4.5</version>
+    <version>0.4.6</version>
     <packaging>jar</packaging>
 
     <name>RPWorldInteractions</name>
@@ -52,9 +52,9 @@
         <dependency>
             <groupId>org.s1queence.lib</groupId>
             <artifactId>s1queencelib</artifactId>
-            <version>0.1</version>
+            <version>1.0</version>
             <scope>system</scope>
-            <systemPath>C:/Users/Denis/Desktop/TestServer/plugins/S1queenceLib-0.1.jar</systemPath>
+            <systemPath>C:/Users/Denis/Desktop/TestServer/plugins/S1queenceLib-1.0.jar</systemPath>
         </dependency>
     </dependencies>
 

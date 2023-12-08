@@ -1,25 +1,25 @@
 #рекомендуется перезапустить сервер, после изменения ссылки ниже
-resource_pack: "https://drive.google.com/uc?export=download&confirm=no_antivirus&id=1lvyZquGlnDofPEOuJkRI8Ba77pNPTTyd"
+resource_pack: "https://drive.google.com/uc?export=download&confirm=no_antivirus&id=1k0uQP-kMYbM6OtZSSxHuSrbHi_g1OSU8"
 
-progress_bar: #работает только с every_tick
-  symbol: ∎
-  max_bars: 21
-  border_left: "&8{"
-  border_right: "&8}"
-  color: "f"
-  complete_color: "6"
-  percent_color: "6"
+progress_bar:
+  max_bars: 15
+  symbol: '|||'
+  border_left: '&8{'
+  border_right: '&8}'
+  color: f
+  complete_color: '7'
+  percent_color: 'e'
 
 #напиши default если хочешь, чтобы свойство осталось стандартным, то есть перешедшим от material
 empty_item:
-  material: RED_STAINED_GLASS_PANE
+  material: GRAY_STAINED_GLASS_PANE
   name: "&cОграничитель"
   cmd: default
   lore: default
 
 rummage:
   seconds: 7 #время на "обыск"
-  inv_title: "Предметы %username%" #не может быть отформатирован и в данном случае %username% - target.name
+  inv_title: "&7Предметы %username%"
 
 sounds:
   sit: true
