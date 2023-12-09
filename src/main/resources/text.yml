@@ -85,7 +85,6 @@ push_action:
       - "&7«&eМама не разучила &c%username%&e толкаться&7»"
       - "&7«&eВас толкнул &c%username%&e&7»"
       - "&7«&eВас пихнул &c%username%&e. ответите ему взаимностью?&7»"
-
 lookat:
   name_text: "&3Никнейм: "
   perm_view_text: "&3Основные черты: "
@@ -106,3 +105,7 @@ lookat:
   entity_view_item_frame_text: "&6Лежащий предмет: "
   entity_view_item_frame_text_item_name: "&eЕго название: "
   entity_view_item_frame_text_item_lore: "&eЕго описание:"
+
+notify:
+  admin_additional_text: " что-то хочет от администрации..." #просто дополнительный текст. Сообщение всегда содержит в себе подчёркнутый ник игрока, нажав на который игрока телепортирует к отправившему запрос.
+  player_text: "&2Администрация уведомлена! &7Ждите..."

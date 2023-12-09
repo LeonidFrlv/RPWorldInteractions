@@ -2,7 +2,6 @@ package org.s1queence.plugin;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.geco.gsit.api.GSitAPI;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -30,7 +29,6 @@ import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
 
 public class RPWorldInteractions extends JavaPlugin implements Listener {
     private final Map<String, RPActionPanel> playersAndPanels = new HashMap<>();
-    public static final String PLUGIN_TITLE = "[" + ChatColor.GOLD + "RPWorldInteractions" + ChatColor.WHITE + "]";
     private List<String> item_usage;
     private YamlDocument actionInventoryConfig;
     private YamlDocument textConfig;
@@ -44,6 +42,7 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
     private boolean select_actionItem_sound;
     private boolean lookat_sound;
     private boolean rummage_command;
+    private boolean notify_sound;
 
     public void onEnable() {
         try {
@@ -58,6 +57,8 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
 
         log(getTextFromCfg("onEnable_msg", textConfig));
 
+        saveResource("permissions.txt", false);
+
         item_usage = actionInventoryConfig.getStringList("action_inv.item_usage");
 
         command_enable = actionInventoryConfig.getBoolean("action_inv.command_enable");
@@ -66,6 +67,7 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
         lay_sound = optionsConfig.getBoolean("sounds.lay");
         crawl_sound = optionsConfig.getBoolean("sounds.crawl");
         select_actionItem_sound = optionsConfig.getBoolean("sounds.select_actionItem");
+        notify_sound = optionsConfig.getBoolean("sounds.notify");
         lookat_sound = optionsConfig.getBoolean("sounds.lookat_sound");
         rummage_command = optionsConfig.getBoolean("rummage.command");
 
@@ -111,6 +113,11 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
     public boolean isOpenSound() {
         return open_sound;
     }
+
+    public boolean isNotifySound() {
+        return notify_sound;
+    }
+    public void setIsNotifySound(boolean newState) {notify_sound = newState;}
 
     public boolean isRummageCommand() {return rummage_command;}
     public void setIsRummageCommand(boolean newState) {rummage_command = newState;}

@@ -9,18 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
-import static org.s1queence.plugin.RPWorldInteractions.PLUGIN_TITLE;
 
 public class TextUtils {
     public static String getTextFromCfg(String path, YamlDocument config) {
         String msg = config.getString(path);
+        String title = "[" + ChatColor.GOLD + "RPWorldInteractions" + ChatColor.WHITE + "]";
+
 
         if (msg == null)  {
             String nullMsgError = ofNullable(config.getString("msg_is_null")).orElse("&6%plugin% FATAL ERROR." + " We recommend that you delete the text.yml file from the plugin folder and use reload config.");
-            return ChatColor.translateAlternateColorCodes('&', nullMsgError.replace("%plugin%", PLUGIN_TITLE).replace("%msg_path%", path));
+            return ChatColor.translateAlternateColorCodes('&', nullMsgError.replace("%plugin%", title).replace("%msg_path%", path));
         }
 
-        return (ChatColor.translateAlternateColorCodes('&', msg.replace("%plugin%", PLUGIN_TITLE)));
+        return (ChatColor.translateAlternateColorCodes('&', msg.replace("%plugin%", title)));
     }
 
     public static void sendPlayerViewToPlayer(Player receiver, String holderName, RPWorldInteractions plugin) {

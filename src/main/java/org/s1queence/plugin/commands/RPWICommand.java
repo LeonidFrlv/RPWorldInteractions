@@ -17,7 +17,6 @@ import static org.s1queence.api.countdown.CountDownAction.getPreprocessActionHan
 import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.getRummageHandlers;
 import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
 
-
 public class RPWICommand implements CommandExecutor {
     private final RPWorldInteractions plugin;
     public RPWICommand(RPWorldInteractions plugin) {this.plugin = plugin;}
@@ -61,6 +60,7 @@ public class RPWICommand implements CommandExecutor {
         plugin.setIsSelectActionItemSound(optionsConfig.getBoolean("sounds.select_actionItem"));
         plugin.setIsLookAtSound(optionsConfig.getBoolean("sounds.lookat_sound"));
         plugin.setIsRummageCommand(optionsConfig.getBoolean("rummage.command"));
+        plugin.setIsNotifySound(optionsConfig.getBoolean("sounds.notify"));
 
         getPreprocessActionHandlers().clear();
         getDoubleRunnableActionHandlers().clear();

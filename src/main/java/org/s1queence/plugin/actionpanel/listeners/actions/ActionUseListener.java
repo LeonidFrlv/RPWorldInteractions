@@ -2,6 +2,8 @@ package org.s1queence.plugin.actionpanel.listeners.actions;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.geco.gsit.api.GSitAPI;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -110,7 +112,19 @@ public class ActionUseListener implements Listener {
             sendPlayerViewToPlayer(player, player.getName(), plugin);
         }
 
-        if (!itemUUID.contains("#crawl") && !itemUUID.contains("#lay") && !itemUUID.contains("#sit") && !itemUUID.contains("#view")) {
+        if (itemUUID.contains("#notify")) {
+            for (Player p : plugin.getServer().getOnlinePlayers()) {
+                if (!p.hasPermission("rpwi.perms.notifyLog") || !p.isOp()) continue;
+                if (plugin.isNotifySound()) p.playSound(p.getLocation(), "rpwi.notify", 1.0f, 1.0f);
+                TextComponent msg = new TextComponent(ChatColor.RED + "" + ChatColor.UNDERLINE + player.getName());
+                msg.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + player.getName()));
+                msg.addExtra(getTextFromCfg("notify.admin_additional_text", plugin.getTextConfig()));
+                p.spigot().sendMessage(msg);
+            }
+            player.sendMessage(getTextFromCfg("notify.player_text", plugin.getTextConfig()));
+        }
+
+        if (!itemUUID.contains("#crawl") && !itemUUID.contains("#lay") && !itemUUID.contains("#sit") && !itemUUID.contains("#view") && !itemUUID.contains("#notify")) {
             if (!itemUUID.contains("#close")) moveActionToInventory(player, clicked.clone());
             if (plugin.isSelectActionItemSound()) player.playSound(player.getLocation(), "rpwi.select_action-item", 0.9f, 1.0f);
         }
@@ -215,8 +229,8 @@ public class ActionUseListener implements Listener {
         ItemStack item = pusher.getInventory().getItemInMainHand();
         if (item.getType().equals(Material.AIR)) return;
         String itemUUID = getActionUUID(item);
+        if (itemUUID != null && !itemUUID.contains("#push")) return;
         if (!isActionItem(item, plugin)) return;
-        if (!itemUUID.contains("#push")) return;
         if (!(target instanceof LivingEntity) || target.getType().equals(EntityType.ARMOR_STAND)) return;
         target.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(1));
         e.setCancelled(true);

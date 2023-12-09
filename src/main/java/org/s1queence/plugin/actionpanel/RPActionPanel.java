@@ -71,7 +71,8 @@ public class RPActionPanel {
             ChatColor.DARK_GRAY + "#push",
             ChatColor.DARK_GRAY + "#dropblock",
             ChatColor.DARK_GRAY + "#close",
-            ChatColor.DARK_GRAY + "#view",
+            ChatColor.DARK_GRAY + "#notify",
+            ChatColor.DARK_GRAY + "#view"
     };
 
     public static boolean isEnabledAction(String s1) {

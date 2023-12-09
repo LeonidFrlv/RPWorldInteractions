@@ -1,5 +1,5 @@
 #рекомендуется перезапустить сервер, после изменения ссылки ниже
-resource_pack: "https://drive.google.com/uc?export=download&confirm=no_antivirus&id=1k0uQP-kMYbM6OtZSSxHuSrbHi_g1OSU8"
+resource_pack: "https://drive.google.com/uc?export=download&confirm=no_antivirus&id=15yqMbNdtbBSZ6zcIjQOafm8hHOY8I86t"
 
 progress_bar:
   max_bars: 15
@@ -28,6 +28,7 @@ sounds:
   crawl: true
   select_actionItem: true
   lookat_sound: true
+  notify: true
 
 view_paint_tool: # "кисточка", чтобы добавлять описания блокам
   material: BLAZE_ROD
