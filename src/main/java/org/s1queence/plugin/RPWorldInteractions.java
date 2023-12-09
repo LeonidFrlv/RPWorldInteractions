@@ -13,6 +13,7 @@ import org.s1queence.plugin.actionpanel.listeners.actions.ActionUseListener;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.LookAtListener;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewCommand;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPaintToolCommand;
+import org.s1queence.plugin.actionpanel.listeners.actions.rummage.RummageCommand;
 import org.s1queence.plugin.commands.RPWICommand;
 import org.s1queence.plugin.utils.BarrierClickListener;
 import org.s1queence.plugin.actionpanel.ActionPanelCommand;
@@ -42,6 +43,7 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
     private boolean crawl_sound;
     private boolean select_actionItem_sound;
     private boolean lookat_sound;
+    private boolean rummage_command;
 
     public void onEnable() {
         try {
@@ -65,6 +67,7 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
         crawl_sound = optionsConfig.getBoolean("sounds.crawl");
         select_actionItem_sound = optionsConfig.getBoolean("sounds.select_actionItem");
         lookat_sound = optionsConfig.getBoolean("sounds.lookat_sound");
+        rummage_command = optionsConfig.getBoolean("rummage.command");
 
         getServer().getPluginManager().registerEvents(new ActionUseListener(this), this);
         getServer().getPluginManager().registerEvents(new PreventDefaultForActionItems(this), this);
@@ -76,6 +79,7 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
         getServer().getPluginCommand("rpworldinteractions").setExecutor(new RPWICommand(this));
         getServer().getPluginCommand("vpt").setExecutor(new ViewPaintToolCommand(this));
         getServer().getPluginCommand("view").setExecutor(new ViewCommand(this));
+        getServer().getPluginCommand("rummage").setExecutor(new RummageCommand(this));
     }
 
     @EventHandler
@@ -107,6 +111,9 @@ public class RPWorldInteractions extends JavaPlugin implements Listener {
     public boolean isOpenSound() {
         return open_sound;
     }
+
+    public boolean isRummageCommand() {return rummage_command;}
+    public void setIsRummageCommand(boolean newState) {rummage_command = newState;}
 
     public boolean isSelectActionItemSound() {return select_actionItem_sound;}
     public void setIsSelectActionItemSound(boolean newState) {select_actionItem_sound = newState;}

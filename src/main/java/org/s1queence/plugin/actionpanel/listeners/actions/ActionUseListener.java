@@ -16,10 +16,7 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -28,6 +25,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.s1queence.api.countdown.progressbar.ProgressBar;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
+import org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 
 import java.util.List;
@@ -37,6 +35,8 @@ import static org.s1queence.api.S1Booleans.isAllowableInteraction;
 import static org.s1queence.api.S1TextUtils.getTextWithInsertedPlayerName;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.api.countdown.CountDownAction.*;
+import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.getRummageHandlers;
+import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.updateRummageInventory;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.isActionItem;
 import static org.s1queence.plugin.utils.TextUtils.*;
@@ -52,18 +52,26 @@ public class ActionUseListener implements Listener {
     }
 
     @EventHandler
+    private void onPlayerQuit(PlayerQuitEvent e) {
+        Player player = e.getPlayer();
+        if (!getRummageHandlers().containsKey(player)) return;
+        updateRummageInventory(player);
+    }
+
+    @EventHandler
     private void onInventoryClick(InventoryClickEvent e) {
         if (e.getClickedInventory() == null) return;
         if (!(e.getWhoClicked() instanceof Player)) return;
         Player player = (Player) e.getWhoClicked();
         InventoryAction action = e.getAction();
         RPActionPanel rpAP = plugin.getPlayersAndPanels().get(player.getUniqueId().toString());
-        if (isPlayerInDoubleRunnableAction(player) && !isPlayerMakingSoloCDAction(player) && action.toString().contains("DROP")) {
+        if (isPlayerInDoubleRunnableAction(player) && !isPlayerMakingSoloCDAction(player)) {
             ItemStack item = player.getInventory().getItem(8);
             if (item != null) {
                 String itemUUID = getActionUUID(item);
                 if (itemUUID != null && itemUUID.contains("#rummage")) {
-                    e.setCancelled(true);
+                    Player rummageTarget = getDoubleRunnableActionHandlers().get(player);
+                    if (rummageTarget != null) updateRummageInventory(rummageTarget);
                     return;
                 }
             }
@@ -122,15 +130,15 @@ public class ActionUseListener implements Listener {
     @EventHandler
     private void onPlayerDropItem(PlayerDropItemEvent e) {
         Player player = e.getPlayer();
-        if (!isPlayerInDoubleRunnableAction(player) || isPlayerMakingSoloCDAction(player)) return;
+        if (!getRummageHandlers().containsKey(player)) return;
         e.setCancelled(true);
     }
 
     @EventHandler
-    private void onPlayerDropItem(EntityPickupItemEvent e) {
+    private void onPlayerPickupItem(EntityPickupItemEvent e) {
         if (!(e.getEntity() instanceof Player)) return;
         Player player = (Player) e.getEntity();
-        if (!isPlayerInDoubleRunnableAction(player) || isPlayerMakingSoloCDAction(player)) return;
+        if (!getRummageHandlers().containsKey(player)) return;
         e.setCancelled(true);
     }
 
@@ -175,7 +183,6 @@ public class ActionUseListener implements Listener {
         e.getBlock().getWorld().spawnFallingBlock(newLocation, clonedBlockData);
     }
 
-
     @EventHandler
     private void onVehicleDamage(VehicleDamageEvent e) {
         if (!(e.getAttacker() instanceof Player)) return;
@@ -214,10 +221,17 @@ public class ActionUseListener implements Listener {
         target.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(1));
         e.setCancelled(true);
         if (!(target instanceof Player)) return;
+        Player pTarget = (Player) target;
+        if (!getDoubleRunnableActionHandlers().containsValue(pTarget)) getDoubleRunnableActionHandlers().remove(pTarget);
+        getDoubleRunnableActionHandlers().remove(pusher);
+        if (!getPreprocessActionHandlers().containsValue(pusher)) getPreprocessActionHandlers().remove(pTarget);
+        getPreprocessActionHandlers().remove(pusher);
+        pTarget.closeInventory();
+
         String targetMsg = getTextWithInsertedPlayerName(getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.target_action_bar_messages")), pusher.getName());
         String playerMsg = ChatColor.translateAlternateColorCodes('&', getRandomElemFromStringList(plugin.getTextConfig().getStringList("push_action.player_action_bar_messages")));
         sendActionBarMsg(pusher, playerMsg);
-        sendActionBarMsg((Player) target, targetMsg);
+        sendActionBarMsg(pTarget, targetMsg);
     }
 
     @EventHandler

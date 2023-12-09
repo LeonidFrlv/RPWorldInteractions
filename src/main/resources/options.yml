@@ -20,6 +20,7 @@ empty_item:
 rummage:
   seconds: 7 #время на "обыск"
   inv_title: "&7Предметы %username%"
+  command: true
 
 sounds:
   sit: true

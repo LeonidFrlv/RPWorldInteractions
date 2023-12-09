@@ -12,9 +12,8 @@ onReload_msg: "%plugin% &aКонфиг был обновлён!"
 
 #errors
 msg_is_null: "%plugin% &4Сообщение = null. Пропишите в этом файле: %msg_path%: <сообщение>, чтобы всё отображалось корректно."
-is_action_panel_command_disabled: "%plugin% &4Команда выключена!"
+command_disabled: "%plugin% &4Команда выключена!"
 alert_item_null: "%plugin% &4При создании инвентаря произошла ошибка: предмет-действие не был создан. Проверьте action_inventory.yml конфиг. Скорее всего ошибка в нём!"
-unknown_rpwi_command_action_alert: "%plugin% &4Неизвестное действие"
 no_permission_alert: "&4Нет прав!"
 player_not_found: "&4Игрок не найден!"
 incorrect_inv_size: "%plugin% &4Размер интерфейса предметов может быть равен только 54, 27 или 9! Установлен стандартный размер - 54."

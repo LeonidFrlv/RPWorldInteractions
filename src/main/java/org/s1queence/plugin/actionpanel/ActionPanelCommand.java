@@ -17,7 +17,7 @@ public class ActionPanelCommand implements CommandExecutor {
         if (args.length != 0) return false;
         if (!(sender instanceof Player)) return true;
         if (!plugin.isPanelCommandEnable()) {
-            sender.sendMessage(getTextFromCfg("is_action_panel_command_disabled", plugin.getTextConfig()));
+            sender.sendMessage(getTextFromCfg("command_disabled", plugin.getTextConfig()));
             return true;
         }
 
