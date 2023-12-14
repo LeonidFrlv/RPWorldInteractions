@@ -1,43 +1,32 @@
 package org.s1queence.plugin.utils;
 
-import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.s1queence.plugin.RPWorldInteractions;
+import org.s1queence.plugin.libs.YamlDocument;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
+import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
 
 public class TextUtils {
-    public static String getTextFromCfg(String path, YamlDocument config) {
-        String msg = config.getString(path);
-        String title = "[" + ChatColor.GOLD + "RPWorldInteractions" + ChatColor.WHITE + "]";
-
-
-        if (msg == null)  {
-            String nullMsgError = ofNullable(config.getString("msg_is_null")).orElse("&6%plugin% FATAL ERROR." + " We recommend that you delete the text.yml file from the plugin folder and use reload config.");
-            return ChatColor.translateAlternateColorCodes('&', nullMsgError.replace("%plugin%", title).replace("%msg_path%", path));
-        }
-
-        return (ChatColor.translateAlternateColorCodes('&', msg.replace("%plugin%", title)));
-    }
 
     public static void sendPlayerViewToPlayer(Player receiver, String holderName, RPWorldInteractions plugin) {
         YamlDocument lookAtConfig = plugin.getLookAtConfig();
-        String permView = ofNullable(lookAtConfig.getString(String.join(".", "players", holderName, "perm"))).orElse(getTextFromCfg("lookat.no_perm", plugin.getTextConfig()));
-        String tempView = ofNullable(lookAtConfig.getString(String.join(".", "players", holderName, "temp"))).orElse(getTextFromCfg("lookat.no_temp", plugin.getTextConfig()));
-        receiver.sendMessage(getTextFromCfg("lookat.name_text", plugin.getTextConfig()) + ChatColor.RESET + holderName);
-        receiver.sendMessage(getTextFromCfg("lookat.perm_view_text", plugin.getTextConfig()) + ChatColor.RESET + permView);
-        receiver.sendMessage(getTextFromCfg("lookat.temp_view_text", plugin.getTextConfig()) + ChatColor.RESET + tempView);
-        if (plugin.isLookAtSound()) receiver.playSound(receiver.getLocation(), "rpwi.lookat", 0.9f, 1.0f);
+        String permView = ofNullable(lookAtConfig.getString(String.join(".", "players", holderName, "perm"))).orElse(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.no_perm", plugin.getName()));
+        String tempView = ofNullable(lookAtConfig.getString(String.join(".", "players", holderName, "temp"))).orElse(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.no_temp", plugin.getName()));
+        receiver.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.name_text", plugin.getName()) + ChatColor.RESET + holderName);
+        receiver.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.perm_view_text", plugin.getName()) + ChatColor.RESET + permView);
+        receiver.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.temp_view_text", plugin.getName()) + ChatColor.RESET + tempView);
+        receiver.playSound(receiver.getLocation(), plugin.getOptionsConfig().getString("sounds.look_at"), 0.9f, 1.0f);
     }
 
     public static void sendEntityViewToPlayer(Player receiver, String eType, RPWorldInteractions plugin) {
-        String eView = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "default_entities", eType))).orElse(getTextFromCfg("lookat.no_entity_view", plugin.getTextConfig()));
-        receiver.sendMessage(getTextFromCfg("lookat.entity_view_text", plugin.getTextConfig()) + ChatColor.RESET + eView);
-        if (plugin.isLookAtSound()) receiver.playSound(receiver.getLocation(), "rpwi.lookat", 0.9f, 1.0f);
+        String eView = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "default_entities", eType))).orElse(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.no_entity_view", plugin.getName()));
+        receiver.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.entity_view_text", plugin.getName()) + ChatColor.RESET + eView);
+        receiver.playSound(receiver.getLocation(), plugin.getOptionsConfig().getString("sounds.look_at"), 0.9f, 1.0f);
     }
 
     public static List<String> getClearedFormatList(List<String> toParse) {

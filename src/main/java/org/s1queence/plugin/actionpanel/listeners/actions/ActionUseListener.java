@@ -1,6 +1,5 @@
 package org.s1queence.plugin.actionpanel.listeners.actions;
 
-import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.geco.gsit.api.GSitAPI;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -26,17 +25,21 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.s1queence.api.countdown.progressbar.ProgressBar;
 import org.s1queence.plugin.RPWorldInteractions;
+import org.s1queence.plugin.actionpanel.ActionItemUUID;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
 import org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
+import org.s1queence.plugin.libs.YamlDocument;
 
 import java.util.List;
 
 import static org.s1queence.S1queenceLib.getLib;
 import static org.s1queence.api.S1Booleans.isAllowableInteraction;
-import static org.s1queence.api.S1TextUtils.getTextWithInsertedPlayerName;
+import static org.s1queence.api.S1TextUtils.*;
+import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.api.countdown.CountDownAction.*;
+import static org.s1queence.plugin.actionpanel.ActionItemUUID.fromString;
 import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.getRummageHandlers;
 import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.updateRummageInventory;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
@@ -70,8 +73,8 @@ public class ActionUseListener implements Listener {
         if (isPlayerInDoubleRunnableAction(player) && !isPlayerMakingSoloCDAction(player)) {
             ItemStack item = player.getInventory().getItem(8);
             if (item != null) {
-                String itemUUID = getActionUUID(item);
-                if (itemUUID != null && itemUUID.contains("#rummage")) {
+                String actionUUID = getActionUUID(item);
+                if (actionUUID != null && actionUUID.equals(ActionItemUUID.RUMMAGE.toString())) {
                     Player rummageTarget = getDoubleRunnableActionHandlers().get(player);
                     if (rummageTarget != null) updateRummageInventory(rummageTarget);
                     return;
@@ -93,41 +96,65 @@ public class ActionUseListener implements Listener {
 
         Block block = player.getWorld().getBlockAt(player.getLocation().getBlockX(), player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ());
 
-        if (itemUUID.contains("#sit")) {
-            GSitAPI.createSeat(block, player);
-            if (plugin.isSitSound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.9f, 1.0f);
-        }
+        ActionItemUUID aiUUID = fromString(itemUUID);
 
-        if (itemUUID.contains("#lay")) {
-            GSitAPI.createPose(block, player, Pose.SLEEPING);
-            if (plugin.isLaySound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.9f, 1.0f);
-        }
+        if (aiUUID == null) return;
 
-        if (itemUUID.contains("#crawl")) {
-            GSitAPI.startCrawl(player);
-            if (plugin.isCrawlSound()) player.playSound(player.getLocation(), "rpwi.sit-lay-crawl", 0.9f, 1.0f);
-        }
 
-        if (itemUUID.contains("#view")) {
-            sendPlayerViewToPlayer(player, player.getName(), plugin);
-        }
+        itemUUID = removeAllChatColorCodesFromString(itemUUID.replace("#", ""));
+        String actionSoundName = plugin.getOptionsConfig().getString("sounds." + itemUUID);
 
-        if (itemUUID.contains("#notify")) {
-            for (Player p : plugin.getServer().getOnlinePlayers()) {
-                if (!p.hasPermission("rpwi.perms.notifyLog") || !p.isOp()) continue;
-                if (plugin.isNotifySound()) p.playSound(p.getLocation(), "rpwi.notify", 1.0f, 1.0f);
-                TextComponent msg = new TextComponent(ChatColor.RED + "" + ChatColor.UNDERLINE + player.getName());
-                msg.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + player.getName()));
-                msg.addExtra(getTextFromCfg("notify.admin_additional_text", plugin.getTextConfig()));
-                p.spigot().sendMessage(msg);
+        switch (aiUUID) {
+            case SIT: {
+                GSitAPI.createSeat(block, player);
+                break;
             }
-            player.sendMessage(getTextFromCfg("notify.player_text", plugin.getTextConfig()));
+
+            case LAY: {
+                GSitAPI.createPose(block, player, Pose.SLEEPING);
+                break;
+            }
+
+            case CRAWL: {
+                GSitAPI.startCrawl(player);
+                break;
+            }
+
+            case VIEW: {
+                sendPlayerViewToPlayer(player, player.getName(), plugin);
+                break;
+            }
+
+            case NOTIFY: {
+                for (Player p : plugin.getServer().getOnlinePlayers()) {
+                    if (!p.hasPermission("rpwi.perms.notifyLog") || !p.isOp()) continue;
+                    p.playSound(p.getLocation(), plugin.getOptionsConfig().getString("sounds.notify_all_admins"), 1.0f, 1.0f);
+                    TextComponent msg = new TextComponent(ChatColor.RED + "" + ChatColor.UNDERLINE + player.getName());
+                    msg.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + player.getName()));
+                    msg.addExtra(getConvertedTextFromConfig(plugin.getTextConfig(),"notify.admin_additional_text", plugin.getName()));
+                    p.spigot().sendMessage(msg);
+                }
+                player.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"notify.player_text", plugin.getName()));
+                if (player.hasPermission("rpwi.perms.notifyLog")) {
+                    actionSoundName = "none";
+                    break;
+                }
+                actionSoundName = plugin.getOptionsConfig().getString("sounds.notify_sender");
+                break;
+            }
+
+            case LOOK_AT:
+            case PUT:
+            case RUMMAGE:
+            case PUSH:
+            case DROP_BLOCK: {
+                moveActionToInventory(player, clicked.clone());
+                actionSoundName = plugin.getOptionsConfig().getString("sounds.on_user_select_item");
+                break;
+            }
         }
 
-        if (!itemUUID.contains("#crawl") && !itemUUID.contains("#lay") && !itemUUID.contains("#sit") && !itemUUID.contains("#view") && !itemUUID.contains("#notify")) {
-            if (!itemUUID.contains("#close")) moveActionToInventory(player, clicked.clone());
-            if (plugin.isSelectActionItemSound()) player.playSound(player.getLocation(), "rpwi.select_action-item", 0.9f, 1.0f);
-        }
+        if (actionSoundName != null && !actionSoundName.equalsIgnoreCase("none")) player.playSound(player.getLocation(), actionSoundName, 0.9f, 1.0f);
 
         player.closeInventory();
         e.setCancelled(true);
@@ -183,14 +210,15 @@ public class ActionUseListener implements Listener {
         BlockData clonedBlockData = e.getBlock().getBlockData().clone();
         Material blockType = e.getBlock().getType();
         String itemUUID = getActionUUID(item);
-        if (!isActionItem(item, plugin)) return;
-        if (itemUUID.contains("#put")) {
+        if (!isActionItem(item, player, plugin)) return;
+        if (itemUUID == null) return;
+        if (itemUUID.equals(ActionItemUUID.PUT.toString())) {
             e.setCancelled(true);
             return;
         }
         if (!blockType.isOccluding() && !blockType.toString().contains("STAIRS") && !blockType.toString().contains("LADDER")) return;
         if (item.getType().equals(Material.AIR)) return;
-        if (!itemUUID.contains("#dropblock")) return;
+        if (!itemUUID.equals(ActionItemUUID.DROP_BLOCK.toString())) return;
         Location blockLocation = e.getBlock().getLocation();
         Location newLocation = blockLocation.add(0.5d, 0.0d, 0.5d);
         e.getBlock().setType(Material.AIR);
@@ -203,11 +231,11 @@ public class ActionUseListener implements Listener {
         Player pusher = (Player) e.getAttacker();
         Vehicle vehicle = e.getVehicle();
         ItemStack item = pusher.getInventory().getItemInMainHand();
-        if (item.getType().equals(Material.AIR)) return;
         String itemUUID = getActionUUID(item);
-        if (!isActionItem(item, plugin)) return;
-        if (!itemUUID.contains("#push")) return;
-        vehicle.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(0.3f));
+        if (itemUUID == null) return;
+        if (!isActionItem(item, pusher, plugin)) return;
+        if (!itemUUID.equals(ActionItemUUID.PUSH.toString())) return;
+        if (pusher.getAttackCooldown() == 1.0f) vehicle.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(0.3f));
     }
 
     private String getRandomElemFromStringList(List<String> list) {
@@ -229,10 +257,10 @@ public class ActionUseListener implements Listener {
         ItemStack item = pusher.getInventory().getItemInMainHand();
         if (item.getType().equals(Material.AIR)) return;
         String itemUUID = getActionUUID(item);
-        if (itemUUID != null && !itemUUID.contains("#push")) return;
-        if (!isActionItem(item, plugin)) return;
+        if (itemUUID != null && !itemUUID.equals(ActionItemUUID.PUSH.toString())) return;
+        if (!isActionItem(item, pusher, plugin)) return;
         if (!(target instanceof LivingEntity) || target.getType().equals(EntityType.ARMOR_STAND)) return;
-        target.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(1));
+        if (pusher.getAttackCooldown() == 1.0f) target.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(1));
         e.setCancelled(true);
         if (!(target instanceof Player)) return;
         Player pTarget = (Player) target;
@@ -264,16 +292,17 @@ public class ActionUseListener implements Listener {
         ItemStack item = e.getPlayer().getInventory().getItemInMainHand();
         if (item.getType().equals(Material.AIR)) return;
         String itemUUID = getActionUUID(item);
-        if (itemUUID == null || !isActionItem(item, plugin)) return;
+        if (itemUUID == null || !isActionItem(item, player, plugin)) return;
 
         Entity entity = e.getRightClicked();
         String eType = entity.getType().toString();
 
         if (entity instanceof Player) {
             Player target = (Player) e.getRightClicked();
-            if (itemUUID.contains("#rummage")) {
+            if (itemUUID.equals(ActionItemUUID.RUMMAGE.toString())) {
                 YamlDocument cfg = plugin.getTextConfig();
                 YamlDocument optionsCfg = plugin.getOptionsConfig();
+                String pName = plugin.getName();
                 new Rummage(
                         player,
                         target,
@@ -292,28 +321,30 @@ public class ActionUseListener implements Listener {
                                 ),
                         plugin,
                         plugin,
-                        getTextFromCfg("rummage_action.preprocess.every_tick.action_bar_both", cfg),
-                        getTextFromCfg("rummage_action.preprocess.every_tick.player.title", cfg),
-                        getTextFromCfg("rummage_action.preprocess.every_tick.player.subtitle", cfg),
-                        getTextFromCfg("rummage_action.preprocess.every_tick.target.title", cfg),
-                        getTextFromCfg("rummage_action.preprocess.every_tick.target.subtitle", cfg),
-                        getTextFromCfg("rummage_action.preprocess.complete.action_bar_both", cfg),
-                        getTextFromCfg("rummage_action.preprocess.complete.player.title", cfg),
-                        getTextFromCfg("rummage_action.preprocess.complete.player.subtitle", cfg),
-                        getTextFromCfg("rummage_action.preprocess.complete.target.title", cfg),
-                        getTextFromCfg("rummage_action.preprocess.complete.target.subtitle", cfg),
-                        getTextFromCfg("rummage_action.preprocess.cancel.action_bar_both", cfg),
-                        getTextFromCfg("rummage_action.preprocess.cancel.player.title", cfg),
-                        getTextFromCfg("rummage_action.preprocess.cancel.player.subtitle", cfg),
-                        getTextFromCfg("rummage_action.preprocess.cancel.target.title", cfg),
-                        getTextFromCfg("rummage_action.preprocess.cancel.target.subtitle", cfg)
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.action_bar_both", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.player.title", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.player.subtitle", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.target.title", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.target.subtitle", pName),
+
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.complete.action_bar_both", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.complete.player.title", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.complete.player.subtitle", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.complete.target.title", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.complete.target.subtitle", pName),
+
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.action_bar_both", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.player.title", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.player.subtitle", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.target.title", pName),
+                        getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.target.subtitle", pName)
                 );
             }
-            if (itemUUID.contains("#lookat")) sendPlayerViewToPlayer(player, target.getName(), plugin);
+            if (itemUUID.equals(ActionItemUUID.LOOK_AT.toString())) sendPlayerViewToPlayer(player, target.getName(), plugin);
             return;
         }
 
-        if (itemUUID.contains("#lookat")) {
+        if (itemUUID.equals(ActionItemUUID.LOOK_AT.toString())) {
             if (entity instanceof ItemFrame) {
                 ItemFrame frame = (ItemFrame) e.getRightClicked();
                 ItemStack frameItem = frame.getItem();
@@ -323,23 +354,24 @@ public class ActionUseListener implements Listener {
                     return;
                 }
 
-                player.sendMessage(getTextFromCfg("lookat.entity_view_item_frame_text", plugin.getTextConfig()));
+                player.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.entity_view_item_frame_text", plugin.getName()));
 
                 ItemMeta itemMeta = frameItem.getItemMeta();
                 if (itemMeta.hasDisplayName()) {
                     String name = itemMeta.getDisplayName();
-                    player.sendMessage(getTextFromCfg("lookat.entity_view_item_frame_text_item_name", plugin.getTextConfig()) + ChatColor.RESET + name);
+                    player.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.entity_view_item_frame_text_item_name", plugin.getName()) + ChatColor.RESET + name);
+
                 }
 
                 if (itemMeta.hasLore() && itemMeta.getLore() != null && !itemMeta.getLore().isEmpty()) {
                     List<String> lore = itemMeta.getLore();
-                    player.sendMessage(getTextFromCfg("lookat.entity_view_item_frame_text_item_lore", plugin.getTextConfig()));
+                    player.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.entity_view_item_frame_text_item_lore", plugin.getName()));
                     for (String current : lore) {
                         player.sendMessage(" " + current);
                     }
                 }
 
-                if (plugin.isLookAtSound()) player.playSound(player.getLocation(), "rpwi.lookat", 0.9f, 1.0f);
+                player.playSound(player.getLocation(), plugin.getOptionsConfig().getString("sounds.look_at"), 0.9f, 1.0f);
 
                 return;
             }
@@ -357,17 +389,17 @@ public class ActionUseListener implements Listener {
         Player player = e.getPlayer();
         boolean isInCreative = player.getGameMode().equals(GameMode.CREATIVE);
         ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
-        if (!isActionItem(itemInMainHand, plugin)) return;
+        if (!isActionItem(itemInMainHand, player, plugin)) return;
         if (player.isSneaking()) {
             if (clicked != null && clicked.getType().isInteractable()) return;
-            if (plugin.isOpenSound()) player.playSound(player.getLocation(), "rpwi.inv_open", 0.9f, 1.0f);
+            player.playSound(player.getLocation(), plugin.getOptionsConfig().getString("sounds.open_action_inv"), 0.9f, 1.0f);
             player.openInventory(plugin.getPlayersAndPanels().get(player.getUniqueId().toString()).getInventory());
             return;
         }
 
         if (!action.equals(Action.RIGHT_CLICK_BLOCK) || clicked == null) return;
 
-        String errorText = isAllowableInteraction(player, e.getClickedBlock().getLocation(), getLib());
+        String errorText = isAllowableInteraction(player, clicked.getLocation(), getLib());
         if (errorText != null && !isInCreative) {
             sendActionBarMsg(player, errorText);
             e.setCancelled(true);
@@ -375,7 +407,7 @@ public class ActionUseListener implements Listener {
         }
 
         String itemUUID = getActionUUID(itemInMainHand);
-        if (itemUUID != null && !itemUUID.contains("#put")) return;
+        if (itemUUID != null && !itemUUID.equals(ActionItemUUID.PUT.toString())) return;
 
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
         if (itemInOffHand.getType().equals(Material.AIR)) return;

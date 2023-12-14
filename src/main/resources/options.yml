@@ -22,13 +22,17 @@ rummage:
   inv_title: "&7Предметы %username%"
   command: true
 
-sounds:
-  sit: true
-  lay: true
-  crawl: true
-  select_actionItem: true
-  lookat_sound: true
-  notify: true
+sounds: #напиши none, если хочешь отключить звук вообще
+  sit: "rpwi.sit-lay-crawl"
+  lay: "rpwi.sit-lay-crawl"
+  crawl: "rpwi.sit-lay-crawl"
+  close: "rpwi.select_action-item"
+  view: "rpwi.lookat"
+  look_at: "rpwi.lookat"
+  notify_sender: "rpwi.select_action-item"
+  notify_all_admins: "rpwi.notify"
+  open_action_inv: "rpwi.inv_open"
+  on_user_select_item: "rpwi.select_action-item"
 
 view_paint_tool: # "кисточка", чтобы добавлять описания блокам
   material: BLAZE_ROD

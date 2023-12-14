@@ -1,7 +1,5 @@
 package org.s1queence.plugin.actionpanel;
 
-import dev.dejvokep.boostedyaml.YamlDocument;
-import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -12,12 +10,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.s1queence.plugin.RPWorldInteractions;
+import org.s1queence.plugin.libs.YamlDocument;
+import org.s1queence.plugin.libs.block.implementation.Section;
 
 import java.io.IOException;
 import java.util.*;
 
 import static java.util.Optional.ofNullable;
-import static org.s1queence.api.S1TextUtils.createItemFromMap;
+import static org.s1queence.api.S1TextUtils.*;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
 import static org.s1queence.plugin.utils.BarrierClickListener.empty;
 import static org.s1queence.plugin.utils.TextUtils.*;
@@ -44,7 +44,7 @@ public class RPActionPanel {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            plugin.getServer().getConsoleSender().sendMessage(getTextFromCfg("incorrect_inv_size", plugin.getTextConfig()));
+            plugin.getServer().getConsoleSender().sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"incorrect_inv_size", plugin.getName()));
         }
 
 
@@ -61,28 +61,11 @@ public class RPActionPanel {
         return inv;
     }
 
-    private final static String[] enabledActions = new String[] {
-            ChatColor.DARK_GRAY + "#lookat",
-            ChatColor.DARK_GRAY + "#lay",
-            ChatColor.DARK_GRAY + "#sit",
-            ChatColor.DARK_GRAY + "#crawl",
-            ChatColor.DARK_GRAY + "#put",
-            ChatColor.DARK_GRAY + "#rummage",
-            ChatColor.DARK_GRAY + "#push",
-            ChatColor.DARK_GRAY + "#dropblock",
-            ChatColor.DARK_GRAY + "#close",
-            ChatColor.DARK_GRAY + "#notify",
-            ChatColor.DARK_GRAY + "#view"
-    };
-
-    public static boolean isEnabledAction(String s1) {
-        return Arrays.asList(enabledActions).contains(s1);
-    }
-
     private void insertViewToItemLore(String viewType, ItemStack is) {
         ItemMeta im = is.getItemMeta();
-        String view = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "players", ((Player)holder).getName(), viewType))).orElse(getTextFromCfg("lookat.no_" + viewType, plugin.getTextConfig()));
-        List<String> lore = ofNullable(is.getItemMeta().getLore()).orElse(new ArrayList<>());
+        if (im == null) return;
+        String view = ofNullable(plugin.getLookAtConfig().getString(String.join(".", "players", ((Player)holder).getName(), viewType))).orElse(getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.no_" + viewType, plugin.getName()));
+        List<String> lore = ofNullable(im.getLore()).orElse(new ArrayList<>());
 
         if (lore.isEmpty()) return;
 
@@ -110,6 +93,8 @@ public class RPActionPanel {
     private Inventory create() {
         Inventory actionInv = Bukkit.createInventory(holder, size, title);
 
+        if (actions == null) return actionInv;
+
         for (String key : actions.keySet()) {
             if (key.contains(".")) continue;
             Map<String, Object> itemData = ((Section)actions.get(key)).getStringRouteMappedValues(true);
@@ -117,7 +102,7 @@ public class RPActionPanel {
             ItemStack actionItem = createItemFromMap(itemData);
 
             if (actionItem == null) {
-                plugin.log(getTextFromCfg("alert_item_null", plugin.getTextConfig()));
+                consoleLog(getConvertedTextFromConfig(plugin.getTextConfig(),"alert_item_null", plugin.getName()), plugin);
                 continue;
             }
 
@@ -133,7 +118,7 @@ public class RPActionPanel {
             String uuid = getActionUUID(actionItem);
             String holderName = holder != null ? ((Player)holder).getName() : null;
 
-            if (uuid != null && uuid.contains("#view") && holderName != null) {
+            if (uuid != null &&  uuid.equals(ActionItemUUID.VIEW.toString()) && holderName != null) {
                 insertViewToItemLore("perm", actionItem);
                 insertViewToItemLore("temp", actionItem);
             }

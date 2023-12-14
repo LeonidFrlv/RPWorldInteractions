@@ -1,8 +1,8 @@
 package org.s1queence.plugin.actionpanel.listeners.actions.lookat;
 
-import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,17 +17,20 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.s1queence.plugin.RPWorldInteractions;
+import org.s1queence.plugin.actionpanel.ActionItemUUID;
+import org.s1queence.plugin.libs.YamlDocument;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
+import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPaintToolCommand.viewPaintTool;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.isActionItem;
-import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
 import static org.s1queence.plugin.utils.TextUtils.getRowsList;
 
 public class LookAtListener implements Listener {
@@ -42,6 +45,7 @@ public class LookAtListener implements Listener {
 
     private boolean isViewPaintTool(ItemStack item) {
         ItemStack vpt = viewPaintTool(plugin);
+        if (vpt.getItemMeta() == null) return false;
         if (!item.hasItemMeta()) return false;
         ItemMeta im = item.getItemMeta();
         if (im == null) return false;
@@ -55,13 +59,14 @@ public class LookAtListener implements Listener {
     private void onPlayerMove(PlayerMoveEvent e) throws IOException {
         Player player = e.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
-        Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
+        Scoreboard sb = Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard();
         Objective o = sb.registerNewObjective("look_at_info", "dummy");
         o.setDisplaySlot(DisplaySlot.SIDEBAR);
         YamlDocument lookAtConfig = plugin.getLookAtConfig();
         String title = ChatColor.translateAlternateColorCodes('&', lookAtConfig.getString("scoreboard.title"));
         o.setDisplayName(title);
-        if (!isActionItem(item, plugin) || !getActionUUID(item).contains("#lookat")) {
+        String actionUUID = getActionUUID(item);
+        if (actionUUID == null || !actionUUID.equals(ActionItemUUID.LOOK_AT.toString())) {
             player.setScoreboard(sb);
             return;
         }
@@ -78,7 +83,8 @@ public class LookAtListener implements Listener {
 
         String inMarketBlocks = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "view"));
         String inDefaultBlocks = lookAtConfig.getString(String.join(".", "default_blocks", targetBlock.getType().toString()));
-        String nullText = getTextFromCfg("lookat.no_block_view", plugin.getTextConfig());
+        String nullText = getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.no_block_view", plugin.getName());
+
         String output = ofNullable(ofNullable(inMarketBlocks).orElse(inDefaultBlocks)).orElse(nullText);
         String material = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "material"));
 
@@ -128,7 +134,14 @@ public class LookAtListener implements Listener {
         lookAtCfg.set(String.join(".", "market_blocks", strLocation, "view"), blockView.toString());
         lookAtCfg.set(String.join(".", "market_blocks", strLocation, "material"), e.getBlock().getType().toString());
         lookAtCfg.save();
-        sendActionBarMsg(player, getTextFromCfg("lookat.block_view_add", plugin.getTextConfig()));
+        sendActionBarMsg(player, getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.block_view_add", plugin.getName()));
+
+        for (Entity entity : player.getWorld().getNearbyEntities(e.getBlock().getLocation(), 15.0d, 7.5d, 15.0d)) {
+            if (!(entity instanceof Player)) continue;
+            Player p = (Player) entity;
+            if (p.equals(player)) continue;
+            sendActionBarMsg(p, getConvertedTextFromConfig(plugin.getTextConfig(), "lookat.some_changes_near", plugin.getName()));
+        }
     }
 
     @EventHandler
@@ -143,7 +156,7 @@ public class LookAtListener implements Listener {
         YamlDocument lookAtCfg = plugin.getLookAtConfig();
         lookAtCfg.set(String.join(".", "market_blocks", strLocation), null);
         lookAtCfg.save();
-        sendActionBarMsg(player, getTextFromCfg("lookat.block_view_remove", plugin.getTextConfig()));
+        sendActionBarMsg(player, getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.block_view_remove", plugin.getName()));
     }
 
     @EventHandler
@@ -152,7 +165,7 @@ public class LookAtListener implements Listener {
         Player player = (Player) e.getEntered();
         ItemStack item = player.getInventory().getItemInMainHand();
         String actionUUID = getActionUUID(item);
-        if (!isActionItem(item, plugin) || actionUUID != null && !actionUUID.contains("#lookat")) return;
+        if (!isActionItem(item, player, plugin) || actionUUID != null && !actionUUID.equals(ActionItemUUID.LOOK_AT.toString())) return;
         e.setCancelled(true);
     }
 

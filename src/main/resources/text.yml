@@ -2,7 +2,6 @@
 # %progress_bar% - чтобы вставить progress bar в строку (работает только для действий, которые требует времени для своего выполнения).
 # %percent% - сколько выполнено (в процентах) (работает только для действий)
 # %plugin% - чтобы вставить название плагина
-# %msg_path% - чтобы вставить путь к текущей строке (только с msg_is_null)
 # %username% -  ник игрока, который инициировал событие. Работает только для сообщений, адресованных target
 
 #plugin
@@ -11,11 +10,11 @@ onDisable_msg: "%plugin% &cБыл выключен!"
 onReload_msg: "%plugin% &aКонфиг был обновлён!"
 
 #errors
-msg_is_null: "%plugin% &4Сообщение = null. Пропишите в этом файле: %msg_path%: <сообщение>, чтобы всё отображалось корректно."
 command_disabled: "%plugin% &4Команда выключена!"
 alert_item_null: "%plugin% &4При создании инвентаря произошла ошибка: предмет-действие не был создан. Проверьте action_inventory.yml конфиг. Скорее всего ошибка в нём!"
 no_permission_alert: "&4Нет прав!"
 player_not_found: "&4Игрок не найден!"
+only_reload_msg: "&cИз аргументов этой команды доступен только &ereload&c!"
 incorrect_inv_size: "%plugin% &4Размер интерфейса предметов может быть равен только 54, 27 или 9! Установлен стандартный размер - 54."
 
 #actions_messages
@@ -25,13 +24,13 @@ incorrect_inv_size: "%plugin% &4Размер интерфейса предмет
 rummage_action:
   preprocess:
     every_tick: #рекомендую использовать только вместе с progress_bar
-      action_bar_both: "%percent% "
+      action_bar_both: "%percent%% %progress_bar%"
       player:
-        title: "Вы &cобыскиваете &6%username%"
-        subtitle: "%progress_bar%"
+        title: " "
+        subtitle: "Вы &cобыскиваете &6%username%"
       target:
-        title: "Вас &cобыскивает &6%username%"
-        subtitle: "%progress_bar%"
+        title: " "
+        subtitle: "Вас &cобыскивает &6%username%"
     complete:
       action_bar_both: " "
       player:
@@ -52,7 +51,7 @@ rummage_action:
     every_tick:
       action_bar_both: "%progress_bar%"
       target:
-        title: "Ваш инвентарь &cосматривают"
+        title: "Ваши вещи &cосматривают"
         subtitle: "Присядьте, чтобы &cпомешать"
     cancel:
       action_bar_both: " "
@@ -95,8 +94,8 @@ lookat:
   no_block_view: "Ничего необычного."
   no_entity_view: "Ничего необычного."
   vpt_received: "&eКисточка для описаний получена! Просто сломайте ей блок, чтобы добавить ему описание (подписать кисточку можно через /sign). Нажмите ПКМ, чтобы убрать это описание. ЦВЕТОВЫЕ КОДЫ НЕ ПОДДЕРЖИВАЮТСЯ!" # нужно отредачить это сообщение
-  perm_add: "&eОсновное описание добавлено!"
-  temp_add: "&eДополнительное описание добавлено!"
+  perm_set: "&eОсновное описание добавлено!"
+  temp_set: "&eДополнительное описание добавлено!"
   perm_remove: "&eОсновное описание очищено!"
   temp_remove: "&eДополнительное описание очищено!"
   view_change_alert: "&cВаше внешнее описание было изменено!" #показывается игроку, если кто-то поменял ему описание (кто-то, но не он сам!)
@@ -105,6 +104,7 @@ lookat:
   entity_view_item_frame_text: "&6Лежащий предмет: "
   entity_view_item_frame_text_item_name: "&eЕго название: "
   entity_view_item_frame_text_item_lore: "&eЕго описание:"
+  some_changes_near: "&6Что-то рядом выглядит иначе. &7Наверное следует осмотреться..."
 
 notify:
   admin_additional_text: " что-то хочет от администрации..." #просто дополнительный текст. Сообщение всегда содержит в себе подчёркнутый ник игрока, нажав на который игрока телепортирует к отправившему запрос.

@@ -1,18 +1,19 @@
 package org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands;
 
-import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
+import org.s1queence.plugin.libs.YamlDocument;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
+import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
 import static org.s1queence.plugin.utils.TextUtils.sendPlayerViewToPlayer;
 
 public class ViewCommand implements CommandExecutor {
@@ -33,9 +34,12 @@ public class ViewCommand implements CommandExecutor {
         if (!Arrays.asList(enabledActions).contains(action)) return false;
         Player sender = (Player) commandSender;
 
+        YamlDocument textConfig = plugin.getTextConfig();
+        String pluginName = plugin.getName();
+
         Player target = plugin.getServer().getPlayer(args[1]);
         if (target == null) {
-            sender.sendMessage(getTextFromCfg("player_not_found", plugin.getTextConfig()));
+            sender.sendMessage(getConvertedTextFromConfig(textConfig,"player_not_found", pluginName));
             return true;
         }
 
@@ -44,7 +48,7 @@ public class ViewCommand implements CommandExecutor {
 
         if (action.equals("get")) {
             if (!isSelf && !sender.hasPermission("rpwi.perms.getOtherView") && !isHasBypass) {
-                sender.sendMessage(getTextFromCfg("no_permission_alert", plugin.getTextConfig()));
+                sender.sendMessage(getConvertedTextFromConfig(textConfig,"no_permission_alert", pluginName));
                 return true;
             }
             sendPlayerViewToPlayer(sender, target.getName(), plugin);
@@ -61,9 +65,14 @@ public class ViewCommand implements CommandExecutor {
         boolean isNotCanChangeTempView = viewType.equals("temp") && !sender.hasPermission("rpwi.perms.tempView") && !isHasBypass;
 
         if (isNotCanChangePermView || isNotCanChangeTempView || (!isSelf && !isHasBypass)) {
-            sender.sendMessage(getTextFromCfg("no_permission_alert", plugin.getTextConfig()));
+            sender.sendMessage(getConvertedTextFromConfig(textConfig,"no_permission_alert", pluginName));
             return true;
         }
+
+
+        String senderMsg = getConvertedTextFromConfig(textConfig,"lookat." + viewType + "_" + action, pluginName);
+        sender.sendMessage(senderMsg);
+        if (!isSelf) target.sendMessage(getConvertedTextFromConfig(textConfig,"lookat.view_change_alert", pluginName));
 
         if (action.equals("set")) {
             if (args.length == 3) return false;
@@ -77,31 +86,11 @@ public class ViewCommand implements CommandExecutor {
                 permText.append(args[i]).append(' ');
             }
 
-            String senderMsg = getTextFromCfg("lookat." + viewType + "_add", plugin.getTextConfig());
-            sender.sendMessage(senderMsg);
-
-            if (!isSelf) target.sendMessage(getTextFromCfg("lookat.view_change_alert", plugin.getTextConfig()));
-
-
             lookAtCfg.set(String.join(".", "players", target.getName(), viewType), permText.toString());
-            try {
-                lookAtCfg.save();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            plugin.getPlayersAndPanels().put(target.getUniqueId().toString(), new RPActionPanel(target, plugin));
-
-            return true;
         }
 
         if (action.equals("remove")) {
             if (args.length != 3) return false;
-
-            String senderMsg = getTextFromCfg("lookat." + viewType + "_remove", plugin.getTextConfig());
-            sender.sendMessage(senderMsg);
-
-            if (!isSelf) target.sendMessage(getTextFromCfg("lookat.view_change_alert", plugin.getTextConfig()));
 
             lookAtCfg.set(String.join(".", "players", target.getName(), viewType), null);
         }
@@ -112,7 +101,15 @@ public class ViewCommand implements CommandExecutor {
             throw new RuntimeException(e);
         }
 
-        plugin.getPlayersAndPanels().put(target.getUniqueId().toString(), new RPActionPanel(target, plugin));
+        for (Entity entity : target.getNearbyEntities(15.0d, 7.5d, 15.0d)) {
+            if (!(entity instanceof Player)) continue;
+            Player p = (Player) entity;
+            if (p.equals(sender)) continue;
+            p.sendMessage(getConvertedTextFromConfig(textConfig, "lookat.some_changes_near", pluginName));
+            p.playSound(p.getLocation(), plugin.getOptionsConfig().getString("sounds.look_at"), 1.0f, 1.0f);
+        }
+
+        plugin.getPlayersAndPanels().replace(target.getUniqueId().toString(), new RPActionPanel(target, plugin));
 
         return true;
     }

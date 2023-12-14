@@ -1,6 +1,5 @@
 package org.s1queence.plugin.actionpanel.listeners.actions.rummage;
 
-import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -9,11 +8,12 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.api.countdown.progressbar.ProgressBar;
 import org.s1queence.plugin.RPWorldInteractions;
+import org.s1queence.plugin.libs.YamlDocument;
 
 import static org.s1queence.S1queenceLib.getLib;
 import static org.s1queence.api.S1Booleans.isAllowableInteraction;
+import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
-import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
 
 public class RummageCommand implements CommandExecutor {
     private final RPWorldInteractions plugin;
@@ -24,13 +24,13 @@ public class RummageCommand implements CommandExecutor {
         if (!(commandSender instanceof Player)) return true;
         Player sender = (Player) commandSender;
         if (!plugin.isRummageCommand()) {
-            sender.sendMessage(getTextFromCfg("command_disabled", plugin.getTextConfig()));
+            sender.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"command_disabled", plugin.getName()));
             return true;
         }
         if (args.length != 1) return false;
         Player target = plugin.getServer().getPlayer(args[0]);
         if (target == null || sender.equals(target)) {
-            sender.sendMessage(getTextFromCfg("player_not_found", plugin.getTextConfig()));
+            sender.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"player_not_found", plugin.getName()));
             return true;
         }
 
@@ -42,6 +42,7 @@ public class RummageCommand implements CommandExecutor {
 
         YamlDocument cfg = plugin.getTextConfig();
         YamlDocument optionsCfg = plugin.getOptionsConfig();
+        String pName = plugin.getName();
 
         new Rummage(
                 sender,
@@ -61,21 +62,23 @@ public class RummageCommand implements CommandExecutor {
                 ),
                 plugin,
                 plugin,
-                getTextFromCfg("rummage_action.preprocess.every_tick.action_bar_both", cfg),
-                getTextFromCfg("rummage_action.preprocess.every_tick.player.title", cfg),
-                getTextFromCfg("rummage_action.preprocess.every_tick.player.subtitle", cfg),
-                getTextFromCfg("rummage_action.preprocess.every_tick.target.title", cfg),
-                getTextFromCfg("rummage_action.preprocess.every_tick.target.subtitle", cfg),
-                getTextFromCfg("rummage_action.preprocess.complete.action_bar_both", cfg),
-                getTextFromCfg("rummage_action.preprocess.complete.player.title", cfg),
-                getTextFromCfg("rummage_action.preprocess.complete.player.subtitle", cfg),
-                getTextFromCfg("rummage_action.preprocess.complete.target.title", cfg),
-                getTextFromCfg("rummage_action.preprocess.complete.target.subtitle", cfg),
-                getTextFromCfg("rummage_action.preprocess.cancel.action_bar_both", cfg),
-                getTextFromCfg("rummage_action.preprocess.cancel.player.title", cfg),
-                getTextFromCfg("rummage_action.preprocess.cancel.player.subtitle", cfg),
-                getTextFromCfg("rummage_action.preprocess.cancel.target.title", cfg),
-                getTextFromCfg("rummage_action.preprocess.cancel.target.subtitle", cfg)
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.action_bar_both", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.player.title", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.player.subtitle", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.target.title", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.target.subtitle", pName),
+
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.complete.action_bar_both", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.complete.player.title", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.complete.player.subtitle", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.complete.target.title", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.complete.target.subtitle", pName),
+
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.action_bar_both", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.player.title", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.player.subtitle", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.target.title", pName),
+                getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.target.subtitle", pName)
         );
 
         return true;

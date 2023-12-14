@@ -6,11 +6,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.s1queence.plugin.RPWorldInteractions;
+import org.s1queence.plugin.actionpanel.ActionItemUUID;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
 
 import java.util.List;
 
 public abstract class ActionPanelUtil {
+    public static boolean isActionItemUUID(String str) {
+        for (ActionItemUUID aiuuid : ActionItemUUID.values()) {
+            if (aiuuid.toString().equals(str)) return true;
+        }
+        return false;
+    }
+
     public static String getActionUUID(ItemStack item) {
         if (!item.getType().equals(Material.ENCHANTED_BOOK)) return null;
         if (!item.hasItemMeta()) return null;
@@ -20,15 +28,17 @@ public abstract class ActionPanelUtil {
         List<String> lore = itemMeta.getLore();
         if (lore == null || lore.isEmpty()) return null;
         String llr = lore.get(lore.size() - 1);
-        if (!RPActionPanel.isEnabledAction(llr)) return null;
+        if (!isActionItemUUID(llr)) return null;
         return llr;
     }
 
-    public static boolean isActionItem(ItemStack item, RPWorldInteractions plugin) {
+    public static boolean isActionItem(ItemStack item, Player owner, RPWorldInteractions plugin) {
         String uuid = getActionUUID(item);
         if (uuid == null) return false;
-        if (uuid.contains("#view")) return true;
-        RPActionPanel rpAP = new RPActionPanel(null, plugin);
+        String pUUID = owner.getUniqueId().toString();
+        RPActionPanel rpAP = plugin.getPlayersAndPanels().get(pUUID);
+        if (rpAP == null) return false;
+
         for (ItemStack action : rpAP.getActionItemsList()) {
             ItemStack cloned = action.clone();
             insertLoreBeforeUUID(cloned, plugin.getItemUsage());
@@ -54,8 +64,10 @@ public abstract class ActionPanelUtil {
     }
 
     public static void addDefaultActionItem(Player player, RPWorldInteractions plugin) {
-        RPActionPanel rpAP = new RPActionPanel(null, plugin);
-        ItemStack cloned = rpAP.getActionItemsList().get(0).clone();
+        RPActionPanel rpAP = new RPActionPanel(player, plugin);
+        List<ItemStack> actionItemsList = rpAP.getActionItemsList();
+        if (actionItemsList.isEmpty()) return;
+        ItemStack cloned = actionItemsList.get(0).clone();
         ActionPanelUtil.insertLoreBeforeUUID(cloned, plugin.getItemUsage());
         player.getInventory().setItem(8, cloned);
     }

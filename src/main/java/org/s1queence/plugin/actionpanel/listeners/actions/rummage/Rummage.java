@@ -18,10 +18,10 @@ import org.s1queence.plugin.RPWorldInteractions;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
 import static org.s1queence.api.S1TextUtils.getTextWithInsertedPlayerName;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.plugin.utils.BarrierClickListener.empty;
-import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
 
 public class Rummage extends CountDownAction {
     private final RPWorldInteractions rpwi;
@@ -129,17 +129,16 @@ public class Rummage extends CountDownAction {
 
         final float ACTION_TIME = 2400.0f;
         new BukkitRunnable() {
-            int time = (int)ACTION_TIME;
+            int time = (int) ACTION_TIME;
             @Override
             public void run() {
                 if (isActionCanceled() || !player.getOpenInventory().equals(targetInvView) || time == 0 || !rummageHandlers.containsKey(target)) {
                     cancelAction(false);
-
-                    String cancelRummagePlayerTitle = getTextWithInsertedPlayerName(getTextFromCfg("rummage_action.process.cancel.player.title", rpwi.getTextConfig()), tName);
-                    String cancelRummagePlayerSubtitle = getTextWithInsertedPlayerName(getTextFromCfg("rummage_action.process.cancel.player.subtitle", rpwi.getTextConfig()), tName);
-                    String cancelRummageTargetTitle = getTextWithInsertedPlayerName(getTextFromCfg("rummage_action.process.cancel.target.title", rpwi.getTextConfig()), pName);
-                    String cancelRummageTargetSubtitle = getTextWithInsertedPlayerName(getTextFromCfg("rummage_action.process.cancel.target.subtitle", rpwi.getTextConfig()), pName);
-                    String cancelRummageBothActionBarMsg = getTextFromCfg("rummage_action.process.cancel.action_bar_both", rpwi.getTextConfig());
+                    String cancelRummagePlayerTitle = getTextWithInsertedPlayerName(getConvertedTextFromConfig(rpwi.getTextConfig(),"rummage_action.process.cancel.player.title", rpwi.getName()), tName);
+                    String cancelRummagePlayerSubtitle = getTextWithInsertedPlayerName(getConvertedTextFromConfig(rpwi.getTextConfig(),"rummage_action.process.cancel.player.subtitle", rpwi.getName()), tName);
+                    String cancelRummageTargetTitle = getTextWithInsertedPlayerName(getConvertedTextFromConfig(rpwi.getTextConfig(),"rummage_action.process.cancel.target.title", rpwi.getName()), pName);
+                    String cancelRummageTargetSubtitle = getTextWithInsertedPlayerName(getConvertedTextFromConfig(rpwi.getTextConfig(),"rummage_action.process.cancel.target.subtitle", rpwi.getName()), pName);
+                    String cancelRummageBothActionBarMsg = getConvertedTextFromConfig(rpwi.getTextConfig(),"rummage_action.process.cancel.action_bar_both", rpwi.getName());
                     player.sendTitle(cancelRummagePlayerTitle, cancelRummagePlayerSubtitle, 0, 75, 20);
                     target.sendTitle(cancelRummageTargetTitle, cancelRummageTargetSubtitle, 0, 75, 20);
                     sendActionBarMsg(player, cancelRummageBothActionBarMsg);
@@ -160,9 +159,9 @@ public class Rummage extends CountDownAction {
                 String stringedBar = progressBar.getProgressBar();
                 String percent = progressBar.getPercent();
 
-                String everyTickRummageTargetTitle = getTextWithInsertedProgressBar(getTextWithInsertedPlayerName(getTextFromCfg("rummage_action.process.every_tick.target.title", rpwi.getTextConfig()), pName), stringedBar, percent);
-                String everyTickRummageTargetSubtitle = getTextWithInsertedProgressBar(getTextWithInsertedPlayerName(getTextFromCfg("rummage_action.process.every_tick.target.subtitle", rpwi.getTextConfig()), pName), stringedBar, percent);
-                String everyTickRummageBothActionBar = getTextWithInsertedProgressBar(getTextFromCfg("rummage_action.process.every_tick.action_bar_both", rpwi.getTextConfig()), stringedBar, percent);
+                String everyTickRummageTargetTitle = getTextWithInsertedProgressBar(getTextWithInsertedPlayerName(getConvertedTextFromConfig(rpwi.getTextConfig(),"rummage_action.process.every_tick.target.title", rpwi.getName()), pName), stringedBar, percent);
+                String everyTickRummageTargetSubtitle = getTextWithInsertedProgressBar(getTextWithInsertedPlayerName(getConvertedTextFromConfig(rpwi.getTextConfig(),"rummage_action.process.every_tick.target.subtitle", rpwi.getName()), pName), stringedBar, percent);
+                String everyTickRummageBothActionBar = getTextWithInsertedProgressBar(getConvertedTextFromConfig(rpwi.getTextConfig(),"rummage_action.process.every_tick.action_bar_both", rpwi.getName()), stringedBar, percent);
 
                 target.sendTitle(everyTickRummageTargetTitle, everyTickRummageTargetSubtitle, 0, 75, 20);
                 sendActionBarMsg(player, everyTickRummageBothActionBar);

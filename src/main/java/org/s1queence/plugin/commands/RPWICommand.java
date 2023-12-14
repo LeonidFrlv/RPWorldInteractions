@@ -1,6 +1,5 @@
 package org.s1queence.plugin.commands;
 
-import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,13 +8,16 @@ import org.jetbrains.annotations.NotNull;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
+import org.s1queence.plugin.libs.YamlDocument;
 
 import java.io.File;
+import java.util.Objects;
 
+import static org.s1queence.api.S1TextUtils.consoleLog;
+import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
 import static org.s1queence.api.countdown.CountDownAction.getDoubleRunnableActionHandlers;
 import static org.s1queence.api.countdown.CountDownAction.getPreprocessActionHandlers;
 import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.getRummageHandlers;
-import static org.s1queence.plugin.utils.TextUtils.getTextFromCfg;
 
 public class RPWICommand implements CommandExecutor {
     private final RPWorldInteractions plugin;
@@ -26,7 +28,15 @@ public class RPWICommand implements CommandExecutor {
         if (args.length != 1) return false;
         String action = args[0];
 
-        if (!action.equalsIgnoreCase("reload")) return false;
+        if (sender instanceof Player && !sender.hasPermission("rpwi.perms.reload")) {
+            sender.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"no_permission_alert", plugin.getName()));
+            return true;
+        }
+
+        if (!action.equalsIgnoreCase("reload")) {
+            sender.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"only_reload_msg", plugin.getName()));
+            return true;
+        }
 
         try {
             File textConfigFile = new File(plugin.getDataFolder(), "text.yml");
@@ -34,12 +44,12 @@ public class RPWICommand implements CommandExecutor {
             File optionsConfig = new File(plugin.getDataFolder(), "options.yml");
             File lookatConfigFile = new File(plugin.getDataFolder(), "lookat.yml");
 
-            if (!textConfigFile.exists()) plugin.setTextConfig(YamlDocument.create(new File(plugin.getDataFolder(), "text.yml"), plugin.getResource("text.yml")));
-            if (!actionInventoryConfigFile.exists()) plugin.setActionInventoryConfig(YamlDocument.create(new File(plugin.getDataFolder(), "action_inventory.yml"), plugin.getResource("action_inventory.yml")));
-            if (!optionsConfig.exists()) plugin.setOptionsConfig(YamlDocument.create(new File(plugin.getDataFolder(), "options.yml"), plugin.getResource("options.yml")));
-            if (!lookatConfigFile.exists()) plugin.setLookAtConfig(YamlDocument.create(new File(plugin.getDataFolder(), "lookat.yml"), plugin.getResource("lookat.yml")));
+            if (!textConfigFile.exists()) plugin.setTextConfig(YamlDocument.create(new File(plugin.getDataFolder(), "text.yml"), Objects.requireNonNull(plugin.getResource("text.yml"))));
+            if (!actionInventoryConfigFile.exists()) plugin.setActionInventoryConfig(YamlDocument.create(new File(plugin.getDataFolder(), "action_inventory.yml"), Objects.requireNonNull(plugin.getResource("action_inventory.yml"))));
+            if (!optionsConfig.exists()) plugin.setOptionsConfig(YamlDocument.create(new File(plugin.getDataFolder(), "options.yml"), Objects.requireNonNull(plugin.getResource("options.yml"))));
+            if (!lookatConfigFile.exists()) plugin.setLookAtConfig(YamlDocument.create(new File(plugin.getDataFolder(), "lookat.yml"), Objects.requireNonNull(plugin.getResource("lookat.yml"))));
 
-            if (plugin.getActionInventoryConfig().hasDefaults()) plugin.getActionInventoryConfig().getDefaults().clear();
+            if (plugin.getActionInventoryConfig().hasDefaults()) Objects.requireNonNull(plugin.getActionInventoryConfig().getDefaults()).clear();
             plugin.getActionInventoryConfig().reload();
             plugin.getTextConfig().reload();
             plugin.getOptionsConfig().reload();
@@ -52,15 +62,8 @@ public class RPWICommand implements CommandExecutor {
 
         plugin.setItemUsage(actionInventoryConfig.getStringList("action_inv.item_usage"));
         plugin.setIsPanelCommandEnable(actionInventoryConfig.getBoolean("action_inv.command_enable"));
-        plugin.setIsOpenSound(actionInventoryConfig.getBoolean("action_inv.open_sound"));
 
-        plugin.setIsSitSound(optionsConfig.getBoolean("sounds.sit"));
-        plugin.setIsLaySound(optionsConfig.getBoolean("sounds.lay"));
-        plugin.setIsCrawlSound(optionsConfig.getBoolean("sounds.crawl"));
-        plugin.setIsSelectActionItemSound(optionsConfig.getBoolean("sounds.select_actionItem"));
-        plugin.setIsLookAtSound(optionsConfig.getBoolean("sounds.lookat_sound"));
         plugin.setIsRummageCommand(optionsConfig.getBoolean("rummage.command"));
-        plugin.setIsNotifySound(optionsConfig.getBoolean("sounds.notify"));
 
         getPreprocessActionHandlers().clear();
         getDoubleRunnableActionHandlers().clear();
@@ -72,9 +75,9 @@ public class RPWICommand implements CommandExecutor {
             plugin.getPlayersAndPanels().put(p.getUniqueId().toString(), new RPActionPanel(p, plugin));
         }
 
-        String reloadMsg = getTextFromCfg("onReload_msg", plugin.getTextConfig());
+        String reloadMsg = getConvertedTextFromConfig(plugin.getTextConfig(),"onReload_msg", plugin.getName());
         if (sender instanceof Player) sender.sendMessage(reloadMsg);
-        plugin.log(reloadMsg);
+        consoleLog(reloadMsg, plugin);
 
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
             onlinePlayer.closeInventory();

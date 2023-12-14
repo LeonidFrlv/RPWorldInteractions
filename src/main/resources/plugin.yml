@@ -6,12 +6,10 @@ depend: [S1queenceLib]
 commands:
   actionpanel:
     usage: /ap
-    permission: op
     aliases:
       - ap
   rpworldinteractions:
     usage: /rpwi <action>
-    permission: op
     aliases:
       - rpwi
   vpt:
