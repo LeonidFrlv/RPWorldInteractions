@@ -33,6 +33,7 @@ sounds: #напиши none, если хочешь отключить звук в
   notify_all_admins: "rpwi.notify"
   open_action_inv: "rpwi.inv_open"
   on_user_select_item: "rpwi.select_action-item"
+  spot_join: "rpwi.lookat"
 
 view_paint_tool: # "кисточка", чтобы добавлять описания блокам
   material: BLAZE_ROD

@@ -27,6 +27,7 @@ import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
 import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
+import static org.s1queence.api.S1TextUtils.getStringLocation;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPaintToolCommand.viewPaintTool;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
@@ -37,10 +38,6 @@ public class LookAtListener implements Listener {
     private final RPWorldInteractions plugin;
     public LookAtListener(RPWorldInteractions plugin) {
         this.plugin = plugin;
-    }
-
-    private String getStringLocation(Location loc) {
-        return String.join("_", String.valueOf(loc.getBlockX()), String.valueOf(loc.getBlockY()), String.valueOf(loc.getBlockZ()));
     }
 
     private boolean isViewPaintTool(ItemStack item) {
@@ -79,7 +76,7 @@ public class LookAtListener implements Listener {
         }
 
         Location location = targetBlock.getLocation();
-        String strLocation = getStringLocation(location);
+        String strLocation = getStringLocation("_", location);
 
         String inMarketBlocks = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "view"));
         String inDefaultBlocks = lookAtConfig.getString(String.join(".", "default_blocks", targetBlock.getType().toString()));
@@ -118,7 +115,7 @@ public class LookAtListener implements Listener {
             return;
         }
         e.setCancelled(true);
-        String strLocation = getStringLocation(e.getBlock().getLocation());
+        String strLocation = getStringLocation("_", e.getBlock().getLocation());
         StringBuilder blockView = new StringBuilder();
         List<String> lore = im.getLore();
         for (int i = 0; i < lore.size(); i++) {
@@ -152,7 +149,7 @@ public class LookAtListener implements Listener {
         if (!isViewPaintTool(itemStack)) return;
         if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
         if (e.getClickedBlock() == null) return;
-        String strLocation = getStringLocation(e.getClickedBlock().getLocation());
+        String strLocation = getStringLocation("_", e.getClickedBlock().getLocation());
         YamlDocument lookAtCfg = plugin.getLookAtConfig();
         lookAtCfg.set(String.join(".", "market_blocks", strLocation), null);
         lookAtCfg.save();

@@ -18,3 +18,5 @@ commands:
     usage: /view <get, set, remove> <username> <perm, temp if REMOVE or SET> <text if SET>
   rummage:
     usage: /rummage <player>
+  spots:
+    usage: /spots <create, change, get, delete> <spot_name> <text, radius> <text>

@@ -100,7 +100,6 @@ public class ActionUseListener implements Listener {
 
         if (aiUUID == null) return;
 
-
         itemUUID = removeAllChatColorCodesFromString(itemUUID.replace("#", ""));
         String actionSoundName = plugin.getOptionsConfig().getString("sounds." + itemUUID);
 

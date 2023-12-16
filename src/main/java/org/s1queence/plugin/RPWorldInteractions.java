@@ -11,6 +11,8 @@ import org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPa
 import org.s1queence.plugin.actionpanel.listeners.actions.rummage.RummageCommand;
 import org.s1queence.plugin.commands.RPWICommand;
 import org.s1queence.plugin.libs.YamlDocument;
+import org.s1queence.plugin.spots.SpotsCommand;
+import org.s1queence.plugin.spots.SpotsHandler;
 import org.s1queence.plugin.utils.BarrierClickListener;
 import org.s1queence.plugin.actionpanel.ActionPanelCommand;
 import org.s1queence.plugin.actionpanel.listeners.PlayerSpawnListener;
@@ -23,8 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.s1queence.api.S1TextUtils.consoleLog;
-import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
+import static org.s1queence.api.S1TextUtils.*;
 
 public class RPWorldInteractions extends JavaPlugin {
     private final Map<String, RPActionPanel> playersAndPanels = new HashMap<>();
@@ -33,6 +34,7 @@ public class RPWorldInteractions extends JavaPlugin {
     private YamlDocument textConfig;
     private YamlDocument optionsConfig;
     private YamlDocument lookAtConfig;
+    private YamlDocument spotsConfig;
     private boolean command_enable;
     private boolean rummage_command;
 
@@ -43,6 +45,7 @@ public class RPWorldInteractions extends JavaPlugin {
             textConfig = YamlDocument.create(new File(getDataFolder(), "text.yml"), Objects.requireNonNull(getResource("text.yml")));
             optionsConfig = YamlDocument.create(new File(getDataFolder(), "options.yml"), Objects.requireNonNull(getResource("options.yml")));
             lookAtConfig = YamlDocument.create(new File(getDataFolder(), "lookat.yml"), Objects.requireNonNull(getResource("lookat.yml")));
+            spotsConfig = YamlDocument.create(new File(getDataFolder(), "spots.yml"), Objects.requireNonNull(getResource("spots.yml")));
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
@@ -66,7 +69,12 @@ public class RPWorldInteractions extends JavaPlugin {
         Objects.requireNonNull(getServer().getPluginCommand("vpt")).setExecutor(new ViewPaintToolCommand(this));
         Objects.requireNonNull(getServer().getPluginCommand("view")).setExecutor(new ViewCommand(this));
         Objects.requireNonNull(getServer().getPluginCommand("rummage")).setExecutor(new RummageCommand(this));
+        Objects.requireNonNull(getServer().getPluginCommand("spots")).setExecutor(new SpotsCommand(this));
+
+        SpotsHandler.fill(this);
+        SpotsHandler.run(this);
     }
+
 
     public void onDisable() {
         consoleLog(getConvertedTextFromConfig(textConfig,"onDisable_msg", this.getName()), this);
@@ -96,6 +104,8 @@ public class RPWorldInteractions extends JavaPlugin {
     }
 
     public YamlDocument getActionInventoryConfig() {return actionInventoryConfig;}
+    public YamlDocument getSpotsConfig() {return spotsConfig;}
+    public void setSpotsConfig(YamlDocument newState) {spotsConfig = newState;}
     public void setActionInventoryConfig(YamlDocument newState) {actionInventoryConfig = newState;}
     public YamlDocument getOptionsConfig() {return optionsConfig;}
     public void setOptionsConfig(YamlDocument newState) {optionsConfig  = newState;}

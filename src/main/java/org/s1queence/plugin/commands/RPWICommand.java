@@ -9,6 +9,7 @@ import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
 import org.s1queence.plugin.libs.YamlDocument;
+import org.s1queence.plugin.spots.SpotsHandler;
 
 import java.io.File;
 import java.util.Objects;
@@ -27,8 +28,10 @@ public class RPWICommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (args.length != 1) return false;
         String action = args[0];
+        boolean isSenderPlayer = sender instanceof Player;
 
-        if (sender instanceof Player && !sender.hasPermission("rpwi.perms.reload")) {
+
+        if (isSenderPlayer && !sender.hasPermission("rpwi.perms.reload")) {
             sender.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"no_permission_alert", plugin.getName()));
             return true;
         }
@@ -43,11 +46,13 @@ public class RPWICommand implements CommandExecutor {
             File actionInventoryConfigFile = new File(plugin.getDataFolder(), "action_inventory.yml");
             File optionsConfig = new File(plugin.getDataFolder(), "options.yml");
             File lookatConfigFile = new File(plugin.getDataFolder(), "lookat.yml");
+            File spotsConfigFile = new File(plugin.getDataFolder(), "spots.yml");
 
             if (!textConfigFile.exists()) plugin.setTextConfig(YamlDocument.create(new File(plugin.getDataFolder(), "text.yml"), Objects.requireNonNull(plugin.getResource("text.yml"))));
             if (!actionInventoryConfigFile.exists()) plugin.setActionInventoryConfig(YamlDocument.create(new File(plugin.getDataFolder(), "action_inventory.yml"), Objects.requireNonNull(plugin.getResource("action_inventory.yml"))));
             if (!optionsConfig.exists()) plugin.setOptionsConfig(YamlDocument.create(new File(plugin.getDataFolder(), "options.yml"), Objects.requireNonNull(plugin.getResource("options.yml"))));
             if (!lookatConfigFile.exists()) plugin.setLookAtConfig(YamlDocument.create(new File(plugin.getDataFolder(), "lookat.yml"), Objects.requireNonNull(plugin.getResource("lookat.yml"))));
+            if (!spotsConfigFile.exists()) plugin.setSpotsConfig(YamlDocument.create(new File(plugin.getDataFolder(), "spots.yml"), Objects.requireNonNull(plugin.getResource("spots.yml"))));
 
             if (plugin.getActionInventoryConfig().hasDefaults()) Objects.requireNonNull(plugin.getActionInventoryConfig().getDefaults()).clear();
             plugin.getActionInventoryConfig().reload();
@@ -75,8 +80,10 @@ public class RPWICommand implements CommandExecutor {
             plugin.getPlayersAndPanels().put(p.getUniqueId().toString(), new RPActionPanel(p, plugin));
         }
 
+        SpotsHandler.fill(plugin);
+
         String reloadMsg = getConvertedTextFromConfig(plugin.getTextConfig(),"onReload_msg", plugin.getName());
-        if (sender instanceof Player) sender.sendMessage(reloadMsg);
+        if (isSenderPlayer) sender.sendMessage(reloadMsg);
         consoleLog(reloadMsg, plugin);
 
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {

@@ -3,6 +3,7 @@
 # %percent% - сколько выполнено (в процентах) (работает только для действий)
 # %plugin% - чтобы вставить название плагина
 # %username% -  ник игрока, который инициировал событие. Работает только для сообщений, адресованных target
+# %spot_name% - имя Spot'а (только для spots).
 
 #plugin
 onEnable_msg: "%plugin% &aБыл включен!"
@@ -109,3 +110,14 @@ lookat:
 notify:
   admin_additional_text: " что-то хочет от администрации..." #просто дополнительный текст. Сообщение всегда содержит в себе подчёркнутый ник игрока, нажав на который игрока телепортирует к отправившему запрос.
   player_text: "&2Администрация уведомлена! &7Ждите..."
+
+spots:
+  name_is_too_large: "&cИмя Spot'а не может быть длиннее 17 символов!"
+  list_is_empty: "&eСписок пуст!"
+  list_title: " &8&l> &3&lSPOTS: &8&l<"
+  name_is_exist: "&cSpot с именем %spot_name% cуже существует!"
+  does_not_exist: "&cSpot с именем %spot_name% не найден или не существует!"
+  delete_successfully: "&aSpot с именем &c%spot_name% &aбыл &cудалён&a."
+  create_successfully: "&aSpot с именем &c%spot_name% &aбыл &cсоздан&a."
+  change_successfully: "&aSpot с именем &c%spot_name% &aбыл &cизменён&a."
+  msg_on_hover_spot_when_get: "&7Нажмите, чтобы телепортироваться"
