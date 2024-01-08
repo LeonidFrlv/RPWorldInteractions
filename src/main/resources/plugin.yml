@@ -2,7 +2,9 @@ name: RPWorldInteractions
 version: '${project.version}'
 api-version: '1.18'
 main: org.s1queence.plugin.RPWorldInteractions
-depend: [S1queenceLib]
+depend:
+  - S1queenceLib
+  - GSit
 commands:
   actionpanel:
     usage: /ap

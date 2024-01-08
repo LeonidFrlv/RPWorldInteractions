@@ -52,7 +52,7 @@ public class SpotsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (name.length() > 17) {
+                if (name.length() > plugin.getSpotsConfig().getInt("max_name_length")) {
                     sender.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(), "spots.name_is_too_large", plugin.getName()));
                     return true;
                 }

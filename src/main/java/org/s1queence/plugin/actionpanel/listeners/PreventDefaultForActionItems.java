@@ -21,30 +21,29 @@ public class PreventDefaultForActionItems implements Listener {
     public PreventDefaultForActionItems(RPWorldInteractions plugin) {this.plugin = plugin;}
 
     @EventHandler
-    private void onPlayerClickAtActionItem(InventoryClickEvent e) {
-        try {
-            if (isActionItem(e.getCurrentItem(), (Player) e.getWhoClicked(), plugin)) e.setCancelled(true);
-        } catch (NullPointerException ignored) {
-
-        }
+    private void onPlayerClick(InventoryClickEvent e) {
+        ItemStack currentItem = e.getCurrentItem();
+        if (currentItem == null) return;
+        if (isActionItem(currentItem, (Player) e.getWhoClicked(), plugin)) e.setCancelled(true);
     }
 
     @EventHandler
-    private void onPlayerInteractWithItemFrame(PlayerInteractEntityEvent e) {
+    private void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
         if (!e.getHand().equals(EquipmentSlot.HAND)) return;
         if (!(e.getRightClicked() instanceof ItemFrame)) return;
         if (isActionItem(e.getPlayer().getInventory().getItemInMainHand(), e.getPlayer(), plugin)) e.setCancelled(true);
     }
 
     @EventHandler
-    private void onPlayerDropLookAtItem(PlayerDropItemEvent e) {
+    private void onPlayerDropItem(PlayerDropItemEvent e) {
         if (isActionItem(e.getItemDrop().getItemStack(), e.getPlayer(), plugin)) e.setCancelled(true);
     }
 
     @EventHandler
     private void onPlayerDeath(PlayerDeathEvent e) {
-        for (ItemStack is : e.getDrops())
+        for (ItemStack is : e.getDrops()) {
             if (is != null && isActionItem(is, e.getEntity(), plugin)) is.setType(Material.AIR);
+        }
     }
 
     @EventHandler

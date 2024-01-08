@@ -93,16 +93,12 @@ public class RPWorldInteractions extends JavaPlugin {
 
     public boolean isRummageCommand() {return rummage_command;}
     public void setIsRummageCommand(boolean newState) {rummage_command = newState;}
-
-
     public void setIsPanelCommandEnable(boolean newState) {
         command_enable = newState;
     }
-
     public boolean isLaying(Player player) {
         return GSitAPI.isPosing(player) || GSitAPI.isCrawling(player);
     }
-
     public YamlDocument getActionInventoryConfig() {return actionInventoryConfig;}
     public YamlDocument getSpotsConfig() {return spotsConfig;}
     public void setSpotsConfig(YamlDocument newState) {spotsConfig = newState;}
