@@ -22,8 +22,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
-import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
-import static org.s1queence.api.S1TextUtils.getStringLocation;
+import static org.s1queence.api.S1TextUtils.*;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPaintToolCommand.viewPaintTool;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
@@ -87,8 +86,9 @@ public class LookAtListener implements Listener {
         int limit = lookAtConfig.getInt("max_row_length");
         String overflowSymbol = ChatColor.translateAlternateColorCodes('&', lookAtConfig.getString("overflow_symbol"));
         String output = textContent.length() > limit ? textContent.substring(0, limit) : textContent;
-        if (output.charAt(output.length() - 1) == ' ') output = output.substring(0, output.length() - 1);
-        sendActionBarMsg(player, output + overflowSymbol);
+        boolean isOutputSub = output.length() == textContent.length();
+        if (!isOutputSub && output.charAt(output.length() - 1) == ' ') output = output.substring(0, output.length() - 1);
+        sendActionBarMsg(player, isOutputSub ? output : output + overflowSymbol);
     }
 
     @EventHandler
@@ -98,6 +98,7 @@ public class LookAtListener implements Listener {
         if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && !e.getAction().equals(Action.RIGHT_CLICK_AIR)) return;
         YamlDocument lookAtConfig = plugin.getLookAtConfig();
         Player player = e.getPlayer();
+        if (player.isSneaking()) return;
         ItemStack item = player.getInventory().getItemInMainHand();
         String actionUUID = getActionUUID(item);
         if (actionUUID == null || !actionUUID.equals(ActionItemUUID.LOOK_AT.toString())) return;
