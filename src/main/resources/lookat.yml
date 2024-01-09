@@ -1,6 +1,5 @@
-scoreboard:
-  title: "       &cОкружение       " #с поддержкой цветовых кодов
-  max_row_length: 20 # (минимум 9)
+max_row_length: 30
+overflow_symbol: "&7..."
 
 range: 20 # дальность, на которой игрок "видит" блоки и энтити
 

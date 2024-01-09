@@ -11,19 +11,15 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.ActionItemUUID;
 import org.s1queence.plugin.libs.YamlDocument;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
 import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
@@ -32,7 +28,6 @@ import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPaintToolCommand.viewPaintTool;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.isActionItem;
-import static org.s1queence.plugin.utils.TextUtils.getRowsList;
 
 public class LookAtListener implements Listener {
     private final RPWorldInteractions plugin;
@@ -51,56 +46,68 @@ public class LookAtListener implements Listener {
         return vpt.getItemMeta().getDisplayName().equals(im.getDisplayName());
     }
 
-    @Deprecated
+    private String getBlockView(Block block) {
+        String strLocation = getStringLocation("_", block.getLocation());
+        YamlDocument lookAtConfig = plugin.getLookAtConfig();
+        String inMarketBlocks = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "view"));
+        String inDefaultBlocks = lookAtConfig.getString(String.join(".", "default_blocks", block.getType().toString()));
+        String nullText = getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.no_block_view", plugin.getName());
+        return ofNullable(ofNullable(inMarketBlocks).orElse(inDefaultBlocks)).orElse(nullText);
+    }
+
     @EventHandler
     private void onPlayerMove(PlayerMoveEvent e) throws IOException {
         Player player = e.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
-        Scoreboard sb = Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard();
-        Objective o = sb.registerNewObjective("look_at_info", "dummy");
-        o.setDisplaySlot(DisplaySlot.SIDEBAR);
         YamlDocument lookAtConfig = plugin.getLookAtConfig();
-        String title = ChatColor.translateAlternateColorCodes('&', lookAtConfig.getString("scoreboard.title"));
-        o.setDisplayName(title);
         String actionUUID = getActionUUID(item);
-        if (actionUUID == null || !actionUUID.equals(ActionItemUUID.LOOK_AT.toString())) {
-            player.setScoreboard(sb);
-            return;
-        }
+        if (actionUUID == null || !actionUUID.equals(ActionItemUUID.LOOK_AT.toString())) return;
+
         int range = lookAtConfig.getInt("range");
-        int maxRowLength = lookAtConfig.getInt("scoreboard.max_row_length");
         Block targetBlock = player.getTargetBlock(null, range);
+
         if (targetBlock.getType().equals(Material.AIR)) {
-            player.setScoreboard(sb);
+            sendActionBarMsg(player, " ");
             return;
         }
 
-        Location location = targetBlock.getLocation();
-        String strLocation = getStringLocation("_", location);
+        String strLocation = getStringLocation("_", targetBlock.getLocation());
 
         String inMarketBlocks = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "view"));
-        String inDefaultBlocks = lookAtConfig.getString(String.join(".", "default_blocks", targetBlock.getType().toString()));
-        String nullText = getConvertedTextFromConfig(plugin.getTextConfig(),"lookat.no_block_view", plugin.getName());
 
-        String output = ofNullable(ofNullable(inMarketBlocks).orElse(inDefaultBlocks)).orElse(nullText);
+        String textContent = getBlockView(targetBlock);
         String material = lookAtConfig.getString(String.join(".", "market_blocks", strLocation, "material"));
 
         if (inMarketBlocks != null && !material.equals(targetBlock.getType().toString())) {
             lookAtConfig.set(String.join(".", "market_blocks", strLocation), null);
             lookAtConfig.save();
-            player.setScoreboard(sb);
             return;
         }
 
-        List<String> rows = getRowsList(output, maxRowLength);
-        Collections.reverse(rows);
-        for (int i = 0; i < rows.size(); i++) {
-            String current = rows.get(i);
-            o.getScore(ChatColor.RED + "" + i + " " + ChatColor.RESET + current).setScore(i);
-        }
-
-        player.setScoreboard(sb);
+        int limit = lookAtConfig.getInt("max_row_length");
+        String overflowSymbol = ChatColor.translateAlternateColorCodes('&', lookAtConfig.getString("overflow_symbol"));
+        String output = textContent.length() > limit ? textContent.substring(0, limit) : textContent;
+        if (output.charAt(output.length() - 1) == ' ') output = output.substring(0, output.length() - 1);
+        sendActionBarMsg(player, output + overflowSymbol);
     }
+
+    @EventHandler
+    private void onPlayerInteract(PlayerInteractEvent e) {
+        if (e.getHand() == null) return;
+        if (!e.getHand().equals(EquipmentSlot.HAND)) return;
+        if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && !e.getAction().equals(Action.RIGHT_CLICK_AIR)) return;
+        YamlDocument lookAtConfig = plugin.getLookAtConfig();
+        Player player = e.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        String actionUUID = getActionUUID(item);
+        if (actionUUID == null || !actionUUID.equals(ActionItemUUID.LOOK_AT.toString())) return;
+        int range = lookAtConfig.getInt("range");
+        Block targetBlock = ofNullable(e.getClickedBlock()).orElse(player.getTargetBlock(null, range));
+        if (targetBlock.getType().equals(Material.AIR)) return;
+        player.sendMessage(getBlockView(targetBlock));
+        player.playSound(player.getLocation(), plugin.getOptionsConfig().getString("sounds.look_at"), 0.9f, 1.0f);
+    }
+
 
     @EventHandler
     private void onPlayerDestroyBlock(BlockBreakEvent e) throws IOException {
@@ -143,11 +150,13 @@ public class LookAtListener implements Listener {
 
     @EventHandler
     private void onPlayerInteractBlock(PlayerInteractEvent e) throws IOException {
+        if (e.getHand() == null) return;
+        if (!e.getHand().equals(EquipmentSlot.HAND)) return;
+        if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
         Player player = e.getPlayer();
         if (!player.getGameMode().equals(GameMode.CREATIVE)) return;
         ItemStack itemStack = player.getInventory().getItemInMainHand();
         if (!isViewPaintTool(itemStack)) return;
-        if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
         if (e.getClickedBlock() == null) return;
         String strLocation = getStringLocation("_", e.getClickedBlock().getLocation());
         YamlDocument lookAtCfg = plugin.getLookAtConfig();
