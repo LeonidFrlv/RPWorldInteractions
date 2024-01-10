@@ -49,6 +49,7 @@ public class RummageCommand implements CommandExecutor {
                 target,
                 optionsCfg.getInt("rummage.seconds"),
                 true,
+                true,
                 new ProgressBar(
                         0,
                         1,

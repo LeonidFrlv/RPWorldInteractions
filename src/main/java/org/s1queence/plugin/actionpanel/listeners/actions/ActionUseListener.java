@@ -307,6 +307,7 @@ public class ActionUseListener implements Listener {
                         target,
                         optionsCfg.getInt("rummage.seconds"),
                         true,
+                        true,
                         new ProgressBar(
                                 0,
                                 1,
