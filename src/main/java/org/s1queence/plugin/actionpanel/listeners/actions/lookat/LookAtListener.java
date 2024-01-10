@@ -95,16 +95,14 @@ public class LookAtListener implements Listener {
     private void onPlayerInteract(PlayerInteractEvent e) {
         if (e.getHand() == null) return;
         if (!e.getHand().equals(EquipmentSlot.HAND)) return;
-        if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && !e.getAction().equals(Action.RIGHT_CLICK_AIR)) return;
-        YamlDocument lookAtConfig = plugin.getLookAtConfig();
+        if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
         Player player = e.getPlayer();
         if (player.isSneaking()) return;
         ItemStack item = player.getInventory().getItemInMainHand();
         String actionUUID = getActionUUID(item);
         if (actionUUID == null || !actionUUID.equals(ActionItemUUID.LOOK_AT.toString())) return;
-        int range = lookAtConfig.getInt("range");
-        Block targetBlock = ofNullable(e.getClickedBlock()).orElse(player.getTargetBlock(null, range));
-        if (targetBlock.getType().equals(Material.AIR)) return;
+        Block targetBlock = e.getClickedBlock();
+        if (targetBlock == null || targetBlock.getType().equals(Material.AIR)) return;
         player.sendMessage(getBlockView(targetBlock));
         player.playSound(player.getLocation(), plugin.getOptionsConfig().getString("sounds.look_at"), 0.9f, 1.0f);
     }
