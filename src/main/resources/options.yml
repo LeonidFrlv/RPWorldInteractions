@@ -1,5 +1,7 @@
-#рекомендуется перезапустить сервер, после изменения ссылки ниже
+# рекомендуется перезапустить сервер, после изменения ссылки ниже. Optifine или CIT мод (если версия fabric).
 resource_pack: "https://drive.google.com/uc?export=download&confirm=no_antivirus&id=15yqMbNdtbBSZ6zcIjQOafm8hHOY8I86t"
+# если true, тогда пакет ресурсов по ссылке выше встанет поверх серверного ресурс-пака, а иначе скачайте ресурс-пак по ссылке и пользуйтесь его файлами!
+set_resource_pack: false
 
 progress_bar:
   max_bars: 15

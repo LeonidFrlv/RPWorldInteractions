@@ -28,7 +28,7 @@ public class PlayerSpawnListener implements Listener {
         ItemStack eightItem = player.getInventory().getItem(8);
         String uuid = player.getUniqueId().toString();
         plugin.getPlayersAndPanels().put(uuid, new RPActionPanel(player, plugin));
-        player.setResourcePack(plugin.getOptionsConfig().getString("resource_pack"));
+        if (plugin.getOptionsConfig().getBoolean("set_resource_pack")) player.setResourcePack(plugin.getOptionsConfig().getString("resource_pack"));
         if (eightItem != null && isActionItem(eightItem, player, plugin)) return;
         addDefaultActionItem(player, plugin);
     }
