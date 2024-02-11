@@ -27,6 +27,7 @@ public class RummageCommand implements CommandExecutor {
             sender.sendMessage(getConvertedTextFromConfig(plugin.getTextConfig(),"command_disabled", plugin.getName()));
             return true;
         }
+
         if (args.length != 1) return false;
         Player target = plugin.getServer().getPlayer(args[0]);
         if (target == null || sender.equals(target)) {
@@ -61,7 +62,6 @@ public class RummageCommand implements CommandExecutor {
                         ChatColor.getByChar(optionsCfg.getString("progress_bar.complete_color")),
                         ChatColor.getByChar(optionsCfg.getString("progress_bar.percent_color"))
                 ),
-                plugin,
                 plugin,
                 getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.action_bar_both", pName),
                 getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.player.title", pName),

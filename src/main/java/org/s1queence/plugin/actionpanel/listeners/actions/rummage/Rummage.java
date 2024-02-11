@@ -8,7 +8,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.s1queence.api.countdown.CountDownAction;
@@ -39,7 +38,6 @@ public class Rummage extends CountDownAction {
             boolean isDoubleRunnableAction,
             boolean isClosePlayersInventoriesEveryTick,
             @NotNull ProgressBar pb,
-            @NotNull JavaPlugin plugin,
             @NotNull RPWorldInteractions rpwi,
 
             @NotNull String everyTickBothActionBarMsg,
@@ -68,7 +66,7 @@ public class Rummage extends CountDownAction {
                 isDoubleRunnableAction,
                 isClosePlayersInventoriesEveryTick,
                 pb,
-                plugin,
+                rpwi,
                 everyTickBothActionBarMsg,
                 everyTickPlayerTitle,
                 everyTickPlayerSubtitle,
@@ -97,13 +95,13 @@ public class Rummage extends CountDownAction {
                     return;
                 }
 
-                if (isPlayerInDoubleRunnableAction(player) && isPlayerInDoubleRunnableAction(target)) {
+                if (isPreprocessActionComplete()) {
                     start();
                     cancel();
                 }
 
             }
-        }.runTaskTimer(plugin, 0, 1);
+        }.runTaskTimer(rpwi, 0, 1);
     }
     private void start() {
         Player player = getPlayer();
@@ -114,7 +112,7 @@ public class Rummage extends CountDownAction {
 
         Inventory targetInventory = target.getInventory();
         String invTitle = getTextWithInsertedPlayerName(rpwi.getOptionsConfig().getString("rummage.inv_title"), target.getName());
-        Inventory newTargetInventory = Bukkit.createInventory(null, 54, invTitle);
+        Inventory newTargetInventory = Bukkit.createInventory(target, 54, invTitle);
         for (int i = 0; i < 54; i++) {
             if (i <= 40) {
                 newTargetInventory.setItem(i, targetInventory.getItem(i));
@@ -182,9 +180,11 @@ public class Rummage extends CountDownAction {
                 mainInv.setItem(i, null);
                 continue;
             }
+
             String mat = currentItem.getType().toString().toLowerCase();
             World world = target.getWorld();
             Location loc = target.getLocation();
+
             switch (i) {
                 case 36: {
                     if (!mat.contains("boots")) {

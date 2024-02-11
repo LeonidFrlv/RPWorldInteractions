@@ -81,6 +81,7 @@ public class ActionUseListener implements Listener {
                 }
             }
         }
+
         if (!e.getClickedInventory().equals(rpAP.getInventory())) return;
         if (!action.equals(InventoryAction.PICKUP_ALL)) {
             e.setCancelled(true);
@@ -319,7 +320,6 @@ public class ActionUseListener implements Listener {
                                 ChatColor.getByChar(optionsCfg.getString("progress_bar.complete_color")),
                                 ChatColor.getByChar(optionsCfg.getString("progress_bar.percent_color"))
                                 ),
-                        plugin,
                         plugin,
                         getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.action_bar_both", pName),
                         getConvertedTextFromConfig(cfg,"rummage_action.preprocess.every_tick.player.title", pName),
