@@ -170,6 +170,7 @@ public class Rummage extends CountDownAction {
         }.runTaskTimer(rpwi, 0, 1);
     }
 
+    @Override
     protected boolean isActionCanceled() {
         Player player = getPlayer();
         Player target = getTarget();
