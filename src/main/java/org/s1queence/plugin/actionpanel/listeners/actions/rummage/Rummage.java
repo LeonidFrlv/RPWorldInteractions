@@ -90,7 +90,7 @@ public class Rummage extends CountDownAction {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (isActionCanceled()) {
+                if (isActionCanceled() && !isPreprocessActionComplete()) {
                     cancel();
                     return;
                 }
@@ -168,6 +168,20 @@ public class Rummage extends CountDownAction {
                 sendActionBarMsg(target, everyTickRummageBothActionBar);
             }
         }.runTaskTimer(rpwi, 0, 1);
+    }
+
+    protected boolean isActionCanceled() {
+        Player player = getPlayer();
+        Player target = getTarget();
+        boolean isSneaking = player.isSneaking() || target.isSneaking();
+        boolean isLaunchItemInitial = player.getInventory().getItemInMainHand().equals(getLaunchItem());
+        boolean isTargetNearby = player.getNearbyEntities(1.65f, 0.5f, 1.65f).contains(target);
+        boolean isInAction = isPlayerInCountDownAction(player) || isPlayerInCountDownAction(target);
+        boolean isOnline = player.isOnline() || target.isOnline();
+        boolean isDead = player.isDead() || target.isDead();
+        boolean isLeaveFromStartLocation = !(new Location(player.getWorld(), player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ()).equals(getStartLocation()));
+
+        return isSneaking || !isLaunchItemInitial || !isTargetNearby || !isInAction || !isOnline || isDead || isLeaveFromStartLocation;
     }
 
     public static void updateRummageInventory(Player target) {
