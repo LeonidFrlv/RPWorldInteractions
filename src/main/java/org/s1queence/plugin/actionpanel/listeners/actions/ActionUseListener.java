@@ -33,8 +33,7 @@ import org.s1queence.plugin.libs.YamlDocument;
 
 import java.util.List;
 
-import static org.s1queence.S1queenceLib.getLib;
-import static org.s1queence.api.S1Booleans.isAllowableInteraction;
+import static org.s1queence.api.S1Booleans.isNotAllowableInteraction;
 import static org.s1queence.api.S1TextUtils.*;
 import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
@@ -198,9 +197,8 @@ public class ActionUseListener implements Listener {
     private void onPlayerPlaceBlock(BlockPlaceEvent e) {
         Player player = e.getPlayer();
         Block block = e.getBlock();
-        String errorText = isAllowableInteraction(player, block.getLocation(), getLib());
-        if (errorText != null && !player.getGameMode().equals(GameMode.CREATIVE)) {
-            sendActionBarMsg(player, errorText);
+
+        if (isNotAllowableInteraction(player, block.getLocation())) {
             e.setCancelled(true);
             return;
         }
@@ -281,9 +279,7 @@ public class ActionUseListener implements Listener {
         if (!e.getHand().equals(EquipmentSlot.HAND)) return;
         Player player = e.getPlayer();
 
-        String errorText = isAllowableInteraction(player, e.getRightClicked().getLocation(), getLib());
-        if (errorText != null && !player.getGameMode().equals(GameMode.CREATIVE)) {
-            sendActionBarMsg(player, errorText);
+        if (!player.getGameMode().equals(GameMode.CREATIVE) && isNotAllowableInteraction(player, e.getRightClicked().getLocation())) {
             e.setCancelled(true);
             return;
         }
@@ -399,9 +395,7 @@ public class ActionUseListener implements Listener {
 
         if (!action.equals(Action.RIGHT_CLICK_BLOCK) || clicked == null) return;
 
-        String errorText = isAllowableInteraction(player, clicked.getLocation(), getLib());
-        if (errorText != null && !isInCreative) {
-            sendActionBarMsg(player, errorText);
+        if (!isInCreative && isNotAllowableInteraction(player, clicked.getLocation())) {
             e.setCancelled(true);
             return;
         }

@@ -10,10 +10,8 @@ import org.s1queence.api.countdown.progressbar.ProgressBar;
 import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.libs.YamlDocument;
 
-import static org.s1queence.S1queenceLib.getLib;
-import static org.s1queence.api.S1Booleans.isAllowableInteraction;
+import static org.s1queence.api.S1Booleans.isNotAllowableInteraction;
 import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
-import static org.s1queence.api.S1Utils.sendActionBarMsg;
 
 public class RummageCommand implements CommandExecutor {
     private final RPWorldInteractions plugin;
@@ -35,11 +33,7 @@ public class RummageCommand implements CommandExecutor {
             return true;
         }
 
-        String errorText = isAllowableInteraction(sender, target.getLocation(), getLib());
-        if (errorText != null) {
-            sendActionBarMsg(sender, errorText);
-            return true;
-        }
+        if (isNotAllowableInteraction(sender, target.getLocation())) return true;
 
         YamlDocument cfg = plugin.getTextConfig();
         YamlDocument optionsCfg = plugin.getOptionsConfig();
