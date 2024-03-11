@@ -153,19 +153,6 @@ public class SpotsCommand implements CommandExecutor {
 
         String successMsg = insertSpotName(getConvertedTextFromConfig(plugin.getTextConfig(), "spots." + action + "_successfully", plugin.getName()), spotName);
         sender.sendMessage(successMsg);
-
-        // ты можешь не мув ивент обрабатывать а просто создать один поток который ебашит всё время
-        // и если в e.getWorld.getрядомсущности(радиус, радиус/2, радиус) появляется игрок значит ему отсылается сообщение и он добавляется в мемберсов,
-        // его предмет среды меняется и всё остальное.
-
-        // /spots create 20 Spot_Name - создаёт спот без текстового содержимого, с радиусом в 20, с именем Spot_Name
-        // /spots change Spot_Name Странный дом. &lСамый &r&fстранный дом - меняет текстовое содержимое для Spot_Name спота на указанное
-        // /spots get - показывает игроку все споты (только список имён, без текста или с текстом но с ... в конце, то есть обрезает) При клике по имени спота выполняется команда, которая ниже написана
-        // /spots get Spot_Name - показывает игроку всю информацию о споте (радиус, текст - ты понел)
-        // /spots delete Spot_Name - удаляет спот с именем Spot_Name
-
-
-
         return true;
     }
 }

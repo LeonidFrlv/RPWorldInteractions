@@ -14,7 +14,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
@@ -39,6 +38,7 @@ import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.api.countdown.CountDownAction.*;
 import static org.s1queence.plugin.actionpanel.ActionItemUUID.fromString;
+import static org.s1queence.plugin.actionpanel.listeners.PreventDefaultForActionItems.*;
 import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.getRummageHandlers;
 import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.updateRummageInventory;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
@@ -58,6 +58,7 @@ public class ActionUseListener implements Listener {
     @EventHandler
     private void onPlayerQuit(PlayerQuitEvent e) {
         Player player = e.getPlayer();
+        removePassengers(player);
         if (!getRummageHandlers().containsKey(player)) return;
         updateRummageInventory(player);
     }
@@ -142,6 +143,7 @@ public class ActionUseListener implements Listener {
                 break;
             }
 
+            case LIFT_AND_CARRY:
             case LOOK_AT:
             case PUT:
             case RUMMAGE:
@@ -180,17 +182,6 @@ public class ActionUseListener implements Listener {
         Player player = (Player) e.getEntity();
         if (!getRummageHandlers().containsKey(player)) return;
         e.setCancelled(true);
-    }
-
-    @EventHandler
-    private void onEntityHangingBreak(HangingBreakEvent e) {
-        Entity entity = e.getEntity();
-        if (!(entity instanceof ItemFrame)) return;
-        ItemFrame frame = (ItemFrame) entity;
-        if (frame.isVisible()) return;
-        e.setCancelled(true);
-        e.getEntity().getWorld().dropItemNaturally(frame.getLocation(), frame.getItem());
-        entity.remove();
     }
 
     @EventHandler
@@ -274,12 +265,31 @@ public class ActionUseListener implements Listener {
         sendActionBarMsg(pTarget, targetMsg);
     }
 
+    private void addPlayerPassenger(Player vehicle, Entity passenger) {
+        if (passenger instanceof Player && !GSitAPI.isPosing((Player) passenger) && !GSitAPI.isEmoting((Player) passenger)) {
+            GSitAPI.sitOnPlayer((Player) passenger, vehicle);
+            return;
+        }
+
+        ArmorStand as = vehicle.getWorld().spawn(vehicle.getLocation(), ArmorStand.class);
+        as.setVisible(false);
+        as.setSmall(true);
+        as.setCustomName("rpwi_entity_holder_XXX");
+        as.setCustomNameVisible(false);
+        as.addEquipmentLock(EquipmentSlot.HEAD, ArmorStand.LockType.REMOVING_OR_CHANGING);
+        as.addEquipmentLock(EquipmentSlot.CHEST, ArmorStand.LockType.REMOVING_OR_CHANGING);
+        as.addEquipmentLock(EquipmentSlot.LEGS, ArmorStand.LockType.REMOVING_OR_CHANGING);
+        as.addEquipmentLock(EquipmentSlot.FEET, ArmorStand.LockType.REMOVING_OR_CHANGING);
+        vehicle.addPassenger(as);
+        as.addPassenger(passenger);
+    }
+
     @EventHandler
     private void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
         if (!e.getHand().equals(EquipmentSlot.HAND)) return;
         Player player = e.getPlayer();
 
-        if (!player.getGameMode().equals(GameMode.CREATIVE) && isNotAllowableInteraction(player, e.getRightClicked().getLocation())) {
+        if (isNotAllowableInteraction(player, e.getRightClicked().getLocation())) {
             e.setCancelled(true);
             return;
         }
@@ -292,6 +302,8 @@ public class ActionUseListener implements Listener {
 
         Entity entity = e.getRightClicked();
         String eType = entity.getType().toString();
+
+        if (player.getPassengers().isEmpty() && entity.getPassengers().isEmpty() && itemUUID.equals(ActionItemUUID.LIFT_AND_CARRY.toString()) && !isEntityHolder(entity) && !(entity.getVehicle() instanceof ArmorStand)) addPlayerPassenger(player, entity);
 
         if (entity instanceof Player) {
             Player target = (Player) e.getRightClicked();
@@ -340,6 +352,7 @@ public class ActionUseListener implements Listener {
             return;
         }
 
+
         if (itemUUID.equals(ActionItemUUID.LOOK_AT.toString())) {
             if (entity instanceof ItemFrame) {
                 ItemFrame frame = (ItemFrame) e.getRightClicked();
@@ -383,9 +396,11 @@ public class ActionUseListener implements Listener {
         if (!action.equals(Action.RIGHT_CLICK_BLOCK) && !action.equals(Action.RIGHT_CLICK_AIR)) return;
         Block clicked = e.getClickedBlock();
         Player player = e.getPlayer();
+        World world = player.getWorld();
         boolean isInCreative = player.getGameMode().equals(GameMode.CREATIVE);
         ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
         if (!isActionItem(itemInMainHand, player, plugin)) return;
+
         if (player.isSneaking()) {
             if (clicked != null && clicked.getType().isInteractable()) return;
             player.playSound(player.getLocation(), plugin.getOptionsConfig().getString("sounds.open_action_inv"), 0.9f, 1.0f);
@@ -402,14 +417,12 @@ public class ActionUseListener implements Listener {
 
         String itemUUID = getActionUUID(itemInMainHand);
         if (itemUUID != null && !itemUUID.equals(ActionItemUUID.PUT.toString())) return;
-
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
         if (itemInOffHand.getType().equals(Material.AIR)) return;
         if (itemInOffHand.getType().toString().contains("MINECART") || itemInOffHand.getType().toString().contains("BOAT")) return;
         BlockFace blockFace = e.getBlockFace();
         Block faced = clicked.getRelative(blockFace);
         e.setCancelled(true);
-        World world = player.getWorld();
         ItemFrame invItemFrame = world.spawn(faced.getLocation(), ItemFrame.class);
         invItemFrame.setVisible(false);
         invItemFrame.setItem(itemInOffHand);

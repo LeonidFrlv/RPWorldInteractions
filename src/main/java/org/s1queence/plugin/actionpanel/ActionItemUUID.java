@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 public enum ActionItemUUID {
     LOOK_AT (ChatColor.DARK_GRAY + "#lookat"),
+    LIFT_AND_CARRY (ChatColor.DARK_GRAY + "#lift_and_carry"),
     LAY (ChatColor.DARK_GRAY + "#lay"),
     SIT (ChatColor.DARK_GRAY + "#sit"),
     CRAWL (ChatColor.DARK_GRAY + "#crawl"),

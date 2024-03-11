@@ -6,7 +6,7 @@
 
     <groupId>org.s1queence</groupId>
     <artifactId>RPWorldInteractions</artifactId>
-    <version>0.9.4.1</version>
+    <version>0.9.5</version>
     <packaging>jar</packaging>
 
     <name>RPWorldInteractions</name>
@@ -85,7 +85,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
-                    <!-- your outputDirectory -->
+                    <outputDirectory>C:\Users\Denis\Desktop\TestServer\plugins\</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>
