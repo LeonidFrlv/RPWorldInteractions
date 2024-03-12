@@ -1,5 +1,6 @@
 package org.s1queence.plugin.actionpanel;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -100,8 +101,9 @@ public class RPActionPanel {
             Map<String, Object> itemData = ((Section)actions.get(key)).getStringRouteMappedValues(true);
 
             ItemStack actionItem = createItemFromMap(itemData);
+            Object action_type = itemData.get("action_type");
 
-            if (actionItem == null) {
+            if (actionItem == null || !(action_type instanceof String) || ActionItemUUID.fromString((String) action_type) == null) {
                 consoleLog(getConvertedTextFromConfig(plugin.getTextConfig(),"alert_item_null", plugin.getName()), plugin);
                 continue;
             }
@@ -114,11 +116,15 @@ public class RPActionPanel {
                 slot = (int) (Math.random() * size);
             }
             if (slot < 0 || slot > size - 1) slot = (int) (Math.random() * size);
-            
+
+            NBTItem nbtItem = new NBTItem(actionItem);
+            nbtItem.setString("rpwi_action_type", (String) action_type);
+            nbtItem.applyNBT(actionItem);
+
             String uuid = getActionUUID(actionItem);
             String holderName = holder != null ? ((Player)holder).getName() : null;
 
-            if (uuid != null &&  uuid.equals(ActionItemUUID.VIEW.toString()) && holderName != null) {
+            if (uuid != null && uuid.equals(ActionItemUUID.VIEW.toString()) && holderName != null) {
                 insertViewToItemLore("perm", actionItem);
                 insertViewToItemLore("temp", actionItem);
             }

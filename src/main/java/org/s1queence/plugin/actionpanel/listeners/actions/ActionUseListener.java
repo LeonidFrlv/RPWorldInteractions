@@ -51,7 +51,7 @@ public class ActionUseListener implements Listener {
     public ActionUseListener(RPWorldInteractions plugin) {this.plugin = plugin;}
 
     private void moveActionToInventory(Player player, ItemStack is) {
-        ActionPanelUtil.insertLoreBeforeUUID(is, plugin.getItemUsage());
+        ActionPanelUtil.insertUsageToLore(is, plugin.getItemUsage());
         player.getInventory().setItem(8, is);
     }
 

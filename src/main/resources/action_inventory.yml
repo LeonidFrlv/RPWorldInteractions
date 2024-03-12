@@ -1,21 +1,22 @@
-# Список уникальных id:
-#  &8#lookat
-#  &8#lay
-#  &8#sit
-#  &8#crawl
-#  &8#put
-#  &8#rummage
-#  &8#push
-#  &8#dropblock
-#  &8#close
-#  &8#view
-#  &8#lift_and_carry
+# Список возможных action_type:
+#  lookat - осмотреть
+#  lay - лечь
+#  sit - сесть
+#  crawl - ползти
+#  put - положить
+#  rummage - обыскать
+#  push - толкнуть
+#  dropblock - уронить
+#  close - закрыть
+#  view - визуальное описание
+#  lift_and_carry - поднять и нести
+#  notify - уведомить администрацию
 
 #Используй двойные ковычки (""), если хочешь внедрить цветовые коды в строку
 #напиши default если хочешь, чтобы свойство осталось стандартным, то есть перешедшим от material
 #uniqueId должен быть один из списка uniqueId сверху и обязательно указан
 # %perm_view% и %temp_view% работают только для предмета view
-#поле с вот этой вот решёткой ВСЕГДА обязательно!!!!
+# если поле action_type пустое - тогда предмет не создастся
 
 action_inv:
   command_enable: false
@@ -27,7 +28,8 @@ action_inv:
     - "&7действий, присядьте и используйте"
     - "&7этот предмет."
   actions:
-    13: # Это норме слота. Должен быть меньше размера инвентаря, должен быть целым числом. Если будет не число, тогда плагин автоматически подставит сюда случайное значение между 0 и максимальным размером инвентаря.
+    13: # Это номер слота. Должен быть меньше размера инвентаря, должен быть целым числом. Если будет не число, тогда плагин автоматически подставит сюда случайное значение между 0 и максимальным размером инвентаря.
+      action_type: lookat
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eОсмотреть"
@@ -42,8 +44,8 @@ action_inv:
         - "&7о нём дополнительную информацию."
         - " "
         - "&6&lБудем посмотреть..."
-        - "&8#lookat"
     20:
+      action_type: put
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eПоложить"
@@ -60,8 +62,8 @@ action_inv:
         - " "
         - "&6&lЭто действие + болт - лучшее решение"
         - "&6&lлюбой вашей жизненной проблемы!"
-        - "&8#put"
     21:
+      action_type: rummage
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eОбыскать"
@@ -72,8 +74,8 @@ action_inv:
         - "&7чтобы его обыскать."
         - " "
         - "&6&lСмотреть можно, а трогать нужно"
-        - "&8#rummage"
     22:
+      action_type: push
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eТолкнуть"
@@ -85,8 +87,8 @@ action_inv:
         - "&7толкнуть его без нанесения урона."
         - " "
         - "&6&l\"- Эй, слыш, как ты меня назвал!?\""
-        - "&8#push"
     23:
+      action_type: lift_and_carry
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eПоднять и нести"
@@ -98,8 +100,8 @@ action_inv:
         - " "
         - "&6&lПеренося женщину даже не думайте"
         - "&6&lИзображать, что вам тяжело..."
-        - "&8#lift_and_carry"
     24:
+      action_type: dropblock
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eУронить"
@@ -112,8 +114,8 @@ action_inv:
         - "&7упала, как песок, гравий и т.п."
         - " "
         - "&6&l\"- Эй там, внизу, ложиииись!\""
-        - "&8#dropblock"
     30:
+      action_type: lay
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eЛечь"
@@ -124,8 +126,8 @@ action_inv:
         - "&7Команда - /lay"
         - " "
         - "&6&lМожно сойти за труп"
-        - "&8#lay"
     31:
+      action_type: sit
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eСесть"
@@ -136,8 +138,8 @@ action_inv:
         - "&7Команда - /sit"
         - " "
         - "&6&l..раздвинув ноги"
-        - "&8#sit"
     32:
+      action_type: crawl
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eПолзти"
@@ -148,8 +150,8 @@ action_inv:
         - "&7Команда - /crawl"
         - " "
         - "&6&lБудет не видно в кустах"
-        - "&8#crawl"
     40:
+      action_type: close
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eЗакрыть"
@@ -159,8 +161,8 @@ action_inv:
         - "&7Закрывает этот интерфейс."
         - " "
         - "&6&lДля тех, кто не может найти ESC"
-        - "&8#close"
     0:
+      action_type: notify
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eУведомить администрацию"
@@ -188,8 +190,8 @@ action_inv:
         - "&6&lНет, это не зелёная какаха с глазом,"
         - "&6&lне ёлка и да, мы украли эту текстуру"
         - "&6&lс просторов интернета!"
-        - "&8#notify"
     37:
+      action_type: view
       material: ENCHANTED_BOOK
       cmd: default
       name: "&r&eВаше визуальное описание"
@@ -209,4 +211,3 @@ action_inv:
         - "&7визуальное описание в чат."
         - "&c&oОписание игрока не поддерживает"
         - "&c&oформатирование и цветовые коды!"
-        - "&8#view"
