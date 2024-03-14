@@ -101,7 +101,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
-                    <outputDirectory>C:\Users\Denis\Desktop\TestServer\plugins\</outputDirectory>
+                    <!-- your outputDirectory -->
                 </configuration>
             </plugin>
         </plugins>
