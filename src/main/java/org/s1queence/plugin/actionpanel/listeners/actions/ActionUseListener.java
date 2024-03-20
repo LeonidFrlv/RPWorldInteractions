@@ -39,6 +39,7 @@ import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.api.countdown.CountDownAction.*;
 import static org.s1queence.plugin.actionpanel.ActionItemUUID.fromString;
 import static org.s1queence.plugin.actionpanel.listeners.PreventDefaultForActionItems.*;
+import static org.s1queence.plugin.actionpanel.listeners.PreventDefaultForActionItems.isEntityHolder;
 import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.getRummageHandlers;
 import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.updateRummageInventory;
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
@@ -303,7 +304,11 @@ public class ActionUseListener implements Listener {
         Entity entity = e.getRightClicked();
         String eType = entity.getType().toString();
 
-        if (player.getPassengers().isEmpty() && entity.getPassengers().isEmpty() && itemUUID.equals(ActionItemUUID.LIFT_AND_CARRY.toString()) && !isEntityHolder(entity) && !(entity.getVehicle() instanceof ArmorStand)) addPlayerPassenger(player, entity);
+        boolean isPassengersEmpty = player.getPassengers().isEmpty() && entity.getPassengers().isEmpty();
+        boolean isNotEntityHolder = !isEntityHolder(entity.getVehicle()) && !isEntityHolder(entity);
+        boolean isNotItemFrame = !(entity instanceof ItemFrame);
+        if (isPassengersEmpty && itemUUID.equals(ActionItemUUID.LIFT_AND_CARRY.toString()) && isNotEntityHolder && isNotItemFrame)
+            addPlayerPassenger(player, entity);
 
         if (entity instanceof Player) {
             Player target = (Player) e.getRightClicked();
