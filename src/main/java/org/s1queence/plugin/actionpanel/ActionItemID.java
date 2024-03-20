@@ -3,7 +3,7 @@ package org.s1queence.plugin.actionpanel;
 
 import org.jetbrains.annotations.NotNull;
 
-public enum ActionItemUUID {
+public enum ActionItemID {
     LOOK_AT ("lookat"),
     LIFT_AND_CARRY ("lift_and_carry"),
     LAY ("lay"),
@@ -17,7 +17,7 @@ public enum ActionItemUUID {
     NOTIFY ("notify"),
     VIEW ("view");
     private final String value;
-    ActionItemUUID(@NotNull String value) {
+    ActionItemID(@NotNull String value) {
         this.value = value;
     }
 
@@ -26,8 +26,8 @@ public enum ActionItemUUID {
         return value;
     }
 
-    public static ActionItemUUID fromString(String str) {
-        for (ActionItemUUID aiUUID : ActionItemUUID.values())
+    public static ActionItemID fromString(String str) {
+        for (ActionItemID aiUUID : ActionItemID.values())
             if (aiUUID.toString().equals(str)) return aiUUID;
 
         return null;

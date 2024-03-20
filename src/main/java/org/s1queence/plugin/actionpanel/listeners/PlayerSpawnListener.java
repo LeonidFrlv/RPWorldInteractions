@@ -10,7 +10,6 @@ import org.s1queence.plugin.RPWorldInteractions;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
 
 import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.addDefaultActionItem;
-import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.isActionItem;
 
 public class PlayerSpawnListener implements Listener {
     private final RPWorldInteractions plugin;
@@ -29,7 +28,7 @@ public class PlayerSpawnListener implements Listener {
         String uuid = player.getUniqueId().toString();
         plugin.getPlayersAndPanels().put(uuid, new RPActionPanel(player, plugin));
         if (plugin.getOptionsConfig().getBoolean("set_resource_pack")) player.setResourcePack(plugin.getOptionsConfig().getString("resource_pack"));
-        if (eightItem != null && isActionItem(eightItem, player, plugin)) return;
+        if (eightItem != null) return;
         addDefaultActionItem(player, plugin);
     }
 }

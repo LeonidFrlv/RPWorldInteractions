@@ -1,5 +1,6 @@
 package org.s1queence.plugin.actionpanel.listeners.actions.lookat;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -15,7 +16,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.s1queence.plugin.RPWorldInteractions;
-import org.s1queence.plugin.actionpanel.ActionItemUUID;
+import org.s1queence.plugin.actionpanel.ActionItemID;
 import org.s1queence.plugin.libs.YamlDocument;
 
 import java.io.IOException;
@@ -24,9 +25,7 @@ import java.util.List;
 import static java.util.Optional.ofNullable;
 import static org.s1queence.api.S1TextUtils.*;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
-import static org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPaintToolCommand.viewPaintTool;
-import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
-import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.isActionItem;
+import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.*;
 
 public class LookAtListener implements Listener {
     private final RPWorldInteractions plugin;
@@ -35,14 +34,8 @@ public class LookAtListener implements Listener {
     }
 
     private boolean isViewPaintTool(ItemStack item) {
-        ItemStack vpt = viewPaintTool(plugin);
-        if (vpt.getItemMeta() == null) return false;
-        if (!item.hasItemMeta()) return false;
-        ItemMeta im = item.getItemMeta();
-        if (im == null) return false;
-        if (!im.hasDisplayName()) return false;
-        if (!item.getType().equals(vpt.getType())) return false;
-        return vpt.getItemMeta().getDisplayName().equals(im.getDisplayName());
+        if (item == null || item.getType().equals(Material.AIR)) return false;
+        return new NBTItem(item).getBoolean("rpwi_vpt");
     }
 
     private String getBlockView(Block block) {
@@ -59,8 +52,8 @@ public class LookAtListener implements Listener {
         Player player = e.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
         YamlDocument lookAtConfig = plugin.getLookAtConfig();
-        String actionUUID = getActionUUID(item);
-        if (actionUUID == null || !actionUUID.equals(ActionItemUUID.LOOK_AT.toString())) return;
+        ActionItemID actionID = getActionItemID(item);
+        if (actionID == null || !actionID.equals(ActionItemID.LOOK_AT)) return;
 
         int range = lookAtConfig.getInt("range");
         Block targetBlock = player.getTargetBlock(null, range);
@@ -99,8 +92,8 @@ public class LookAtListener implements Listener {
         Player player = e.getPlayer();
         if (player.isSneaking()) return;
         ItemStack item = player.getInventory().getItemInMainHand();
-        String actionUUID = getActionUUID(item);
-        if (actionUUID == null || !actionUUID.equals(ActionItemUUID.LOOK_AT.toString())) return;
+        ActionItemID actionID = getActionItemID(item);
+        if (actionID == null || !actionID.equals(ActionItemID.LOOK_AT)) return;
         Block targetBlock = e.getClickedBlock();
         if (targetBlock == null || targetBlock.getType().equals(Material.AIR)) return;
         player.sendMessage(getBlockView(targetBlock));
@@ -169,8 +162,8 @@ public class LookAtListener implements Listener {
         if (!(e.getEntered() instanceof Player)) return;
         Player player = (Player) e.getEntered();
         ItemStack item = player.getInventory().getItemInMainHand();
-        String actionUUID = getActionUUID(item);
-        if (!isActionItem(item, player, plugin) || actionUUID != null && !actionUUID.equals(ActionItemUUID.LOOK_AT.toString())) return;
+        ActionItemID actionID = getActionItemID(item);
+        if (actionID != null && !actionID.equals(ActionItemID.LOOK_AT)) return;
         e.setCancelled(true);
     }
 

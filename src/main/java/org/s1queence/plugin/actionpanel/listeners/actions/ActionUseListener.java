@@ -24,7 +24,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.s1queence.api.countdown.progressbar.ProgressBar;
 import org.s1queence.plugin.RPWorldInteractions;
-import org.s1queence.plugin.actionpanel.ActionItemUUID;
+import org.s1queence.plugin.actionpanel.ActionItemID;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
 import org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage;
 import org.s1queence.plugin.actionpanel.utils.ActionPanelUtil;
@@ -37,13 +37,11 @@ import static org.s1queence.api.S1TextUtils.*;
 import static org.s1queence.api.S1TextUtils.getConvertedTextFromConfig;
 import static org.s1queence.api.S1Utils.sendActionBarMsg;
 import static org.s1queence.api.countdown.CountDownAction.*;
-import static org.s1queence.plugin.actionpanel.ActionItemUUID.fromString;
 import static org.s1queence.plugin.actionpanel.listeners.PreventDefaultForActionItems.*;
 import static org.s1queence.plugin.actionpanel.listeners.PreventDefaultForActionItems.isEntityHolder;
 import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.getRummageHandlers;
 import static org.s1queence.plugin.actionpanel.listeners.actions.rummage.Rummage.updateRummageInventory;
-import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
-import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.isActionItem;
+import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionItemID;
 import static org.s1queence.plugin.utils.TextUtils.*;
 
 public class ActionUseListener implements Listener {
@@ -73,13 +71,11 @@ public class ActionUseListener implements Listener {
         RPActionPanel rpAP = plugin.getPlayersAndPanels().get(player.getUniqueId().toString());
         if (isPlayerInDoubleRunnableAction(player) && !isPlayerMakingSoloCDAction(player)) {
             ItemStack item = player.getInventory().getItem(8);
-            if (item != null) {
-                String actionUUID = getActionUUID(item);
-                if (actionUUID != null && actionUUID.equals(ActionItemUUID.RUMMAGE.toString())) {
-                    Player rummageTarget = getDoubleRunnableActionHandlers().get(player);
-                    if (rummageTarget != null) updateRummageInventory(rummageTarget);
-                    return;
-                }
+            ActionItemID actionID = getActionItemID(item);
+            if (actionID != null && actionID.equals(ActionItemID.RUMMAGE)) {
+                Player rummageTarget = getDoubleRunnableActionHandlers().get(player);
+                if (rummageTarget != null) updateRummageInventory(rummageTarget);
+                return;
             }
         }
 
@@ -88,24 +84,21 @@ public class ActionUseListener implements Listener {
             e.setCancelled(true);
             return;
         }
+
         ItemStack clicked = e.getCurrentItem();
         if (clicked == null) return;
-        String itemUUID = getActionUUID(clicked);
-        if (itemUUID == null) {
+
+        ActionItemID actionID = getActionItemID(clicked);
+        if (actionID == null) {
             e.setCancelled(true);
             return;
         }
 
         Block block = player.getWorld().getBlockAt(player.getLocation().getBlockX(), player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ());
 
-        ActionItemUUID aiUUID = fromString(itemUUID);
+        String actionSoundName = plugin.getOptionsConfig().getString("sounds." + actionID.toString().toLowerCase());
 
-        if (aiUUID == null) return;
-
-        itemUUID = removeAllChatColorCodesFromString(itemUUID.replace("#", ""));
-        String actionSoundName = plugin.getOptionsConfig().getString("sounds." + itemUUID);
-
-        switch (aiUUID) {
+        switch (actionID) {
             case SIT: {
                 GSitAPI.createSeat(block, player);
                 break;
@@ -199,16 +192,15 @@ public class ActionUseListener implements Listener {
         ItemStack item = inv.getItemInMainHand();
         BlockData clonedBlockData = e.getBlock().getBlockData().clone();
         Material blockType = e.getBlock().getType();
-        String itemUUID = getActionUUID(item);
-        if (!isActionItem(item, player, plugin)) return;
-        if (itemUUID == null) return;
-        if (itemUUID.equals(ActionItemUUID.PUT.toString())) {
+        ActionItemID actionID = getActionItemID(item);
+        if (actionID == null) return;
+        if (actionID.equals(ActionItemID.PUT)) {
             e.setCancelled(true);
             return;
         }
         if (!blockType.isOccluding() && !blockType.toString().contains("STAIRS") && !blockType.toString().contains("LADDER")) return;
         if (item.getType().equals(Material.AIR)) return;
-        if (!itemUUID.equals(ActionItemUUID.DROP_BLOCK.toString())) return;
+        if (!actionID.equals(ActionItemID.DROP_BLOCK)) return;
         Location blockLocation = e.getBlock().getLocation();
         Location newLocation = blockLocation.add(0.5d, 0.0d, 0.5d);
         e.getBlock().setType(Material.AIR);
@@ -221,10 +213,9 @@ public class ActionUseListener implements Listener {
         Player pusher = (Player) e.getAttacker();
         Vehicle vehicle = e.getVehicle();
         ItemStack item = pusher.getInventory().getItemInMainHand();
-        String itemUUID = getActionUUID(item);
-        if (itemUUID == null) return;
-        if (!isActionItem(item, pusher, plugin)) return;
-        if (!itemUUID.equals(ActionItemUUID.PUSH.toString())) return;
+        ActionItemID actionID = getActionItemID(item);
+        if (actionID == null) return;
+        if (!actionID.equals(ActionItemID.PUSH)) return;
         if (pusher.getAttackCooldown() == 1.0f) vehicle.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(0.3f));
     }
 
@@ -246,9 +237,8 @@ public class ActionUseListener implements Listener {
         Entity target = e.getEntity();
         ItemStack item = pusher.getInventory().getItemInMainHand();
         if (item.getType().equals(Material.AIR)) return;
-        String itemUUID = getActionUUID(item);
-        if (itemUUID != null && !itemUUID.equals(ActionItemUUID.PUSH.toString())) return;
-        if (!isActionItem(item, pusher, plugin)) return;
+        ActionItemID actionID = getActionItemID(item);
+        if (actionID != null && !actionID.equals(ActionItemID.PUSH)) return;
         if (!(target instanceof LivingEntity) || target.getType().equals(EntityType.ARMOR_STAND)) return;
         if (pusher.getAttackCooldown() == 1.0f) target.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(1));
         e.setCancelled(true);
@@ -298,8 +288,8 @@ public class ActionUseListener implements Listener {
         if (isPlayerInCountDownAction(player) || plugin.isLaying(player)) return;
         ItemStack item = e.getPlayer().getInventory().getItemInMainHand();
         if (item.getType().equals(Material.AIR)) return;
-        String itemUUID = getActionUUID(item);
-        if (itemUUID == null || !isActionItem(item, player, plugin)) return;
+        ActionItemID actionID = getActionItemID(item);
+        if (actionID == null) return;
 
         Entity entity = e.getRightClicked();
         String eType = entity.getType().toString();
@@ -307,12 +297,12 @@ public class ActionUseListener implements Listener {
         boolean isPassengersEmpty = player.getPassengers().isEmpty() && entity.getPassengers().isEmpty();
         boolean isNotEntityHolder = !isEntityHolder(entity.getVehicle()) && !isEntityHolder(entity);
         boolean isNotItemFrame = !(entity instanceof ItemFrame);
-        if (isPassengersEmpty && itemUUID.equals(ActionItemUUID.LIFT_AND_CARRY.toString()) && isNotEntityHolder && isNotItemFrame)
+        if (isPassengersEmpty && actionID.equals(ActionItemID.LIFT_AND_CARRY) && isNotEntityHolder && isNotItemFrame)
             addPlayerPassenger(player, entity);
 
         if (entity instanceof Player) {
             Player target = (Player) e.getRightClicked();
-            if (itemUUID.equals(ActionItemUUID.RUMMAGE.toString())) {
+            if (actionID.equals(ActionItemID.RUMMAGE)) {
                 YamlDocument cfg = plugin.getTextConfig();
                 YamlDocument optionsCfg = plugin.getOptionsConfig();
                 String pName = plugin.getName();
@@ -353,12 +343,12 @@ public class ActionUseListener implements Listener {
                         getConvertedTextFromConfig(cfg,"rummage_action.preprocess.cancel.target.subtitle", pName)
                 );
             }
-            if (itemUUID.equals(ActionItemUUID.LOOK_AT.toString())) sendPlayerViewToPlayer(player, target.getName(), plugin);
+            if (actionID.equals(ActionItemID.LOOK_AT)) sendPlayerViewToPlayer(player, target.getName(), plugin);
             return;
         }
 
 
-        if (itemUUID.equals(ActionItemUUID.LOOK_AT.toString())) {
+        if (actionID.equals(ActionItemID.LOOK_AT)) {
             if (entity instanceof ItemFrame) {
                 ItemFrame frame = (ItemFrame) e.getRightClicked();
                 ItemStack frameItem = frame.getItem();
@@ -403,8 +393,10 @@ public class ActionUseListener implements Listener {
         Player player = e.getPlayer();
         World world = player.getWorld();
         boolean isInCreative = player.getGameMode().equals(GameMode.CREATIVE);
-        ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
-        if (!isActionItem(itemInMainHand, player, plugin)) return;
+        ItemStack item = player.getInventory().getItemInMainHand();
+
+        ActionItemID actionID = getActionItemID(item);
+        if (actionID == null) return;
 
         if (player.isSneaking()) {
             if (clicked != null && clicked.getType().isInteractable()) return;
@@ -420,8 +412,7 @@ public class ActionUseListener implements Listener {
             return;
         }
 
-        String itemUUID = getActionUUID(itemInMainHand);
-        if (itemUUID != null && !itemUUID.equals(ActionItemUUID.PUT.toString())) return;
+        if (!actionID.equals(ActionItemID.PUT)) return;
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
         if (itemInOffHand.getType().equals(Material.AIR)) return;
         if (itemInOffHand.getType().toString().contains("MINECART") || itemInOffHand.getType().toString().contains("BOAT")) return;

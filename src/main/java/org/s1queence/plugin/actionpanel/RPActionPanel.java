@@ -19,7 +19,7 @@ import java.util.*;
 
 import static java.util.Optional.ofNullable;
 import static org.s1queence.api.S1TextUtils.*;
-import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionUUID;
+import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.getActionItemID;
 import static org.s1queence.plugin.utils.BarrierClickListener.empty;
 import static org.s1queence.plugin.utils.TextUtils.*;
 
@@ -103,7 +103,7 @@ public class RPActionPanel {
             ItemStack actionItem = createItemFromMap(itemData);
             Object action_type = itemData.get("action_type");
 
-            if (actionItem == null || !(action_type instanceof String) || ActionItemUUID.fromString((String) action_type) == null) {
+            if (actionItem == null || !(action_type instanceof String) || ActionItemID.fromString((String) action_type) == null) {
                 consoleLog(getConvertedTextFromConfig(plugin.getTextConfig(),"alert_item_null", plugin.getName()), plugin);
                 continue;
             }
@@ -121,10 +121,10 @@ public class RPActionPanel {
             nbtItem.setString("rpwi_action_type", (String) action_type);
             nbtItem.applyNBT(actionItem);
 
-            String uuid = getActionUUID(actionItem);
+            ActionItemID actionID = getActionItemID(actionItem);
             String holderName = holder != null ? ((Player)holder).getName() : null;
 
-            if (uuid != null && uuid.equals(ActionItemUUID.VIEW.toString()) && holderName != null) {
+            if (actionID != null && actionID.equals(ActionItemID.VIEW) && holderName != null) {
                 insertViewToItemLore("perm", actionItem);
                 insertViewToItemLore("temp", actionItem);
             }

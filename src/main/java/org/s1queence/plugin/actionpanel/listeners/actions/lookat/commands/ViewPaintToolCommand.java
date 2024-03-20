@@ -1,5 +1,6 @@
 package org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,7 +17,11 @@ public class ViewPaintToolCommand implements CommandExecutor {
     public ViewPaintToolCommand(RPWorldInteractions plugin) {this.plugin = plugin;}
 
     public static ItemStack viewPaintTool(RPWorldInteractions plugin) {
-        return createItemFromMap(plugin.getOptionsConfig().getSection("view_paint_tool").getStringRouteMappedValues(true));
+        ItemStack vpt = createItemFromMap(plugin.getOptionsConfig().getSection("view_paint_tool").getStringRouteMappedValues(true));
+        NBTItem nbtItem = new NBTItem(vpt);
+        nbtItem.setBoolean("rpwi_vpt", true);
+        nbtItem.applyNBT(vpt);
+        return vpt;
     }
 
     @Override

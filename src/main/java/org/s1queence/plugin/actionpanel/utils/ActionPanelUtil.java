@@ -7,32 +7,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.s1queence.plugin.RPWorldInteractions;
+import org.s1queence.plugin.actionpanel.ActionItemID;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
 
 import java.util.List;
 
-
 public abstract class ActionPanelUtil {
 
-    public static String getActionUUID(ItemStack item) {
+    public static ActionItemID getActionItemID(ItemStack item) {
         if (item == null || item.getType().equals(Material.AIR)) return null;
-        return new NBTItem(item).getString("rpwi_action_type");
+        return ActionItemID.fromString(new NBTItem(item).getString("rpwi_action_type"));
     }
 
-    public static boolean isActionItem(ItemStack item, Player owner, RPWorldInteractions plugin) {
-        String uuid = getActionUUID(item);
-        if (uuid == null) return false;
-        String pUUID = owner.getUniqueId().toString();
-        RPActionPanel rpAP = plugin.getPlayersAndPanels().get(pUUID);
-        if (rpAP == null) return false;
-
-        for (ItemStack action : rpAP.getActionItemsList()) {
-            ItemStack cloned = action.clone();
-            insertUsageToLore(cloned, plugin.getItemUsage());
-            if (cloned.equals(item)) return true;
-        }
-
-        return false;
+    public static boolean isActionItem(ItemStack item) {
+        if (item == null || item.getType().equals(Material.AIR)) return false;
+        return ActionItemID.fromString(new NBTItem(item).getString("rpwi_action_type")) != null;
     }
 
     public static void insertUsageToLore(ItemStack is, List<String> loreToInsert) {

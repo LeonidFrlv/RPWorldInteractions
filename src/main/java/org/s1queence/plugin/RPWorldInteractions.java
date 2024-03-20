@@ -60,7 +60,7 @@ public class RPWorldInteractions extends JavaPlugin {
         rummage_command = optionsConfig.getBoolean("rummage.command");
 
         getServer().getPluginManager().registerEvents(new ActionUseListener(this), this);
-        getServer().getPluginManager().registerEvents(new PreventDefaultForActionItems(this), this);
+        getServer().getPluginManager().registerEvents(new PreventDefaultForActionItems(), this);
         getServer().getPluginManager().registerEvents(new PlayerSpawnListener(this), this);
         getServer().getPluginManager().registerEvents(new BarrierClickListener(this), this);
         getServer().getPluginManager().registerEvents(new LookAtListener(this), this);
