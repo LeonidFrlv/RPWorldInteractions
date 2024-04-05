@@ -238,7 +238,7 @@ public class ActionUseListener implements Listener {
         ItemStack item = pusher.getInventory().getItemInMainHand();
         if (item.getType().equals(Material.AIR)) return;
         ActionItemID actionID = getActionItemID(item);
-        if (actionID != null && !actionID.equals(ActionItemID.PUSH)) return;
+        if (actionID == null || !actionID.equals(ActionItemID.PUSH)) return;
         if (!(target instanceof LivingEntity) || target.getType().equals(EntityType.ARMOR_STAND)) return;
         if (pusher.getAttackCooldown() == 1.0f) target.setVelocity(pusher.getLocation().getDirection().setY(0).normalize().multiply(1));
         e.setCancelled(true);
