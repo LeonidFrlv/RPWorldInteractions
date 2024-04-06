@@ -163,7 +163,7 @@ public class LookAtListener implements Listener {
         Player player = (Player) e.getEntered();
         ItemStack item = player.getInventory().getItemInMainHand();
         ActionItemID actionID = getActionItemID(item);
-        if (actionID != null && !actionID.equals(ActionItemID.LOOK_AT)) return;
+        if (actionID == null || !actionID.equals(ActionItemID.LOOK_AT)) return;
         e.setCancelled(true);
     }
 

@@ -279,17 +279,15 @@ public class ActionUseListener implements Listener {
     private void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
         if (!e.getHand().equals(EquipmentSlot.HAND)) return;
         Player player = e.getPlayer();
-
-        if (isNotAllowableInteraction(player, e.getRightClicked().getLocation())) {
-            e.setCancelled(true);
-            return;
-        }
-
         if (isPlayerInCountDownAction(player) || plugin.isLaying(player)) return;
         ItemStack item = e.getPlayer().getInventory().getItemInMainHand();
         if (item.getType().equals(Material.AIR)) return;
         ActionItemID actionID = getActionItemID(item);
         if (actionID == null) return;
+        if (isNotAllowableInteraction(player, e.getRightClicked().getLocation())) {
+            e.setCancelled(true);
+            return;
+        }
 
         Entity entity = e.getRightClicked();
         String eType = entity.getType().toString();
