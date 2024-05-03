@@ -22,3 +22,6 @@ commands:
     usage: /rummage <player>
   spots:
     usage: /spots <create, change, get, delete> <spot_name> <text, radius> <text>
+  addactionitem:
+    usage: /addActionItem <player>
+    permission: rpwi.perms.item_giver

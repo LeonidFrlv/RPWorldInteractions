@@ -6,6 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.s1queence.plugin.actionpanel.RPActionPanel;
 import org.s1queence.plugin.actionpanel.listeners.actions.ActionUseListener;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.LookAtListener;
+import org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.AddActionItemCommand;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewCommand;
 import org.s1queence.plugin.actionpanel.listeners.actions.lookat.commands.ViewPaintToolCommand;
 import org.s1queence.plugin.actionpanel.listeners.actions.rummage.RummageCommand;
@@ -65,7 +66,9 @@ public class RPWorldInteractions extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BarrierClickListener(this), this);
         getServer().getPluginManager().registerEvents(new LookAtListener(this), this);
         Objects.requireNonNull(getServer().getPluginCommand("actionpanel")).setExecutor(new ActionPanelCommand(this));
+        Objects.requireNonNull(getServer().getPluginCommand("actionpanel")).setExecutor(new ActionPanelCommand(this));
         Objects.requireNonNull(getServer().getPluginCommand("rpworldinteractions")).setExecutor(new RPWICommand(this));
+        Objects.requireNonNull(getServer().getPluginCommand("addactionitem")).setExecutor(new AddActionItemCommand(this));
         Objects.requireNonNull(getServer().getPluginCommand("vpt")).setExecutor(new ViewPaintToolCommand(this));
         Objects.requireNonNull(getServer().getPluginCommand("view")).setExecutor(new ViewCommand(this));
         Objects.requireNonNull(getServer().getPluginCommand("rummage")).setExecutor(new RummageCommand(this));

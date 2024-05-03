@@ -9,6 +9,7 @@
 onEnable_msg: "%plugin% &aБыл включен!"
 onDisable_msg: "%plugin% &cБыл выключен!"
 onReload_msg: "%plugin% &aКонфиг был обновлён!"
+on_item_give: "&2Предмет успешно выдан игроку %username%!"
 
 #errors
 command_disabled: "%plugin% &4Команда выключена!"

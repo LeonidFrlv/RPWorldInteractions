@@ -23,6 +23,11 @@ import static org.s1queence.plugin.actionpanel.utils.ActionPanelUtil.isActionIte
 public class PreventDefaultForActionItems implements Listener {
     @EventHandler
     private void onPlayerClick(InventoryClickEvent e) {
+        if (e.getHotbarButton() != -1 && isActionItem(e.getWhoClicked().getInventory().getItem(e.getHotbarButton()))) {
+            e.setCancelled(true);
+            return;
+        }
+
         ItemStack currentItem = e.getCurrentItem();
         if (currentItem == null) return;
         if (isActionItem(currentItem)) e.setCancelled(true);
