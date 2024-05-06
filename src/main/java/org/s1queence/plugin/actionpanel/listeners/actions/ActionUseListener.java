@@ -200,8 +200,14 @@ public class ActionUseListener implements Listener {
         }
         if (!blockType.isOccluding() && !blockType.toString().contains("STAIRS") && !blockType.toString().contains("LADDER")) return;
         if (item.getType().equals(Material.AIR)) return;
+
         if (!actionID.equals(ActionItemID.DROP_BLOCK)) return;
         Location blockLocation = e.getBlock().getLocation();
+        ItemStack offItem = inv.getItemInOffHand();
+        if (offItem.getType().equals(Material.CARVED_PUMPKIN)) {
+            ItemMeta im = offItem.getItemMeta();
+            if (im != null && im.hasDisplayName()) return;
+        }
         Location newLocation = blockLocation.add(0.5d, 0.0d, 0.5d);
         e.getBlock().setType(Material.AIR);
         e.getBlock().getWorld().spawnFallingBlock(newLocation, clonedBlockData);

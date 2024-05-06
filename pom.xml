@@ -6,7 +6,7 @@
 
     <groupId>org.s1queence</groupId>
     <artifactId>RPWorldInteractions</artifactId>
-    <version>0.9.7</version>
+    <version>0.9.7.1</version>
     <packaging>jar</packaging>
 
     <name>RPWorldInteractions</name>
