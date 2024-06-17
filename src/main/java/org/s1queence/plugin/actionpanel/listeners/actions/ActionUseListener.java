@@ -263,8 +263,8 @@ public class ActionUseListener implements Listener {
     }
 
     private void addPlayerPassenger(Player vehicle, Entity passenger) {
-        if (passenger instanceof Player && !GSitAPI.isPosing((Player) passenger) && !GSitAPI.isEmoting((Player) passenger)) {
-            GSitAPI.sitOnPlayer((Player) passenger, vehicle);
+        if (passenger instanceof Player) {
+            if (!GSitAPI.isPosing((Player) passenger) && !GSitAPI.isEmoting((Player) passenger) && ((Player) passenger).getWalkSpeed() != 0.0f) GSitAPI.sitOnPlayer((Player) passenger, vehicle);
             return;
         }
 
